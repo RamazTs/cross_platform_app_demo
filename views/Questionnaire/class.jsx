@@ -147,13 +147,14 @@ class Questionnaire extends Component {
   speechStartHandler = e => {
     console.log('speechStart successful');
   };
-
+  found_2 = false;
   speechResultsHandler = async e => {
-    if (this.state.found) return;
+    if (this.state.found || this.found_2) return;
     const {question, answers} = this.state.question_obj;
     const text = e.value[0];
     for (const answ of answers) {
       if (text.toLowerCase().includes(answ.toLowerCase())) {
+        this.found_2 = true;
         this.setState(
           {
             found: true,
@@ -191,6 +192,7 @@ class Questionnaire extends Component {
       ttsState: 'started',
     });
     await this.stopRecording();
+    this.found_2 = false;
     this.setState({
       found: false,
     });
