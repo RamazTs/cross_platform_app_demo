@@ -32,11 +32,9 @@
       </ul>
     </li>
     <li><a href="#usage">Usage</a></li>
-    <li><a href="#roadmap">Roadmap</a></li>
     <li><a href="#contributing">Contributing</a></li>
     <li><a href="#license">License</a></li>
     <li><a href="#contact">Contact</a></li>
-    <li><a href="#acknowledgments">Acknowledgments</a></li>
   </ol>
 </details>
 
@@ -50,7 +48,7 @@ The project is aimed at collecting data from Raynaud patients...
 
 ### Built With
 
-Application development is powered by React and React Native for cross-platform support
+Application development is powered by React and React Native for building a cross-platform application.
 
 - [![React][React.js]][React-url]
 - [![REACT-NATIVE]][React-Native-URL]
@@ -60,31 +58,28 @@ Application development is powered by React and React Native for cross-platform 
 <!-- GETTING STARTED -->
 
 ## Getting Started
+
 ### Prerequisites
 
-This is an example of how to list things you need to use the software and how to install them.
+To run the application, first you need to set up the development environment for react native locally on your machine. Please follow the instruction on the official react native documentation page and install the react native CLI, Xcode and Android Studio
 
-- npm
-  ```sh
-  npm install npm@latest -g
-  ```
+- [https://reactnative.dev/docs/environment-setup?os=macos&platform=android](https://reactnative.dev/docs/environment-setup?os=macos&platform=android)
 
 ### Installation
 
-_Below is an example of how you can instruct your audience on installing and setting up your app. This template doesn't rely on any external dependencies or services._
+_To set up the app on your local machine your app. This application doesn't rely on any external services. Followi the instruction listed below._
 
-1. Get a free API Key at [https://example.com](https://example.com)
-2. Clone the repo
+1. Clone the repository
    ```sh
-   git clone https://github.com/your_username_/Project-Name.git
+   git clone https://github.com/RamazTs/cross_platform_app_demo.git
    ```
-3. Install NPM packages
+2. Install NPM packages
    ```sh
    npm install
    ```
-4. Enter your API in `config.js`
-   ```js
-   const API_KEY = 'ENTER YOUR API';
+3. from the root of the project install pods.
+   ```sh
+   cd ios && pod install
    ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -93,25 +88,21 @@ _Below is an example of how you can instruct your audience on installing and set
 
 ## Usage
 
-Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
+To start the application development run
 
-_For more examples, please refer to the [Documentation](https://example.com)_
+```sh
+npm run start
+```
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+This will start the Metro bundler and enable development on IOS/Android simulators. Follow the prompts on the screen and choose the corresponding simulator. Xcode automatically brings up the simulator. Android studio needs to start the mobile simulator first, then the metro bundler will be able to find the android sim and run the application.
 
-<!-- ROADMAP -->
+To install the development version of the application on an IOS device
 
-## Roadmap
-
-- [x] Add Changelog
-- [x] Add back to top links
-- [ ] Add Additional Templates w/ Examples
-- [ ] Add "components" document to easily copy & paste sections of the readme
-- [ ] Multi-language Support
-  - [ ] Chinese
-  - [ ] Spanish
-
-See the [open issues](https://github.com/othneildrew/Best-README-Template/issues) for a full list of proposed features (and known issues).
+1. Enable developer mode on the IOS phone
+2. Open the ios folder in the project using Xcode
+3. Connect the IOS phone to the computer
+4. Choose your phone as a build target in Xcode
+5. Build the application on you local phone
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -119,16 +110,7 @@ See the [open issues](https://github.com/othneildrew/Best-README-Template/issues
 
 ## Contributing
 
-Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
-
-If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also simply open an issue with the tag "enhancement".
-Don't forget to give the project a star! Thanks again!
-
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+...
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -136,7 +118,7 @@ Don't forget to give the project a star! Thanks again!
 
 ## License
 
-Distributed under the MIT License. See `LICENSE.txt` for more information.
+...
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -144,31 +126,12 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 
 ## Contact
 
-Your Name - [@your_twitter](https://twitter.com/your_username) - email@example.com
-
-Project Link: [https://github.com/your_username/repo_name](https://github.com/your_username/repo_name)
+...
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-<!-- ACKNOWLEDGMENTS -->
+<!-- IMAGES -->
 
-## Acknowledgments
-
-Use this space to list resources you find helpful and would like to give credit to. I've included a few of my favorites to kick things off!
-
-- [Choose an Open Source License](https://choosealicense.com)
-- [GitHub Emoji Cheat Sheet](https://www.webpagefx.com/tools/emoji-cheat-sheet)
-- [Malven's Flexbox Cheatsheet](https://flexbox.malven.co/)
-- [Malven's Grid Cheatsheet](https://grid.malven.co/)
-- [Img Shields](https://shields.io)
-- [GitHub Pages](https://pages.github.com)
-- [Font Awesome](https://fontawesome.com)
-- [React Icons](https://react-icons.github.io/react-icons/search)
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-<!-- MARKDOWN LINKS & IMAGES -->
-<!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
 [React.js]: https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB
 [React-url]: https://reactjs.org/
 [React-Native]: https://img.shields.io/badge/react_native-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB
