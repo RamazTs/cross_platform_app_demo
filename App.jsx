@@ -1,5 +1,5 @@
 import {useState} from 'react';
-import {StyleSheet, Text, View, useColorScheme} from 'react-native';
+import {useColorScheme} from 'react-native';
 import {
   createBottomTabNavigator,
   DefaultTheme,
@@ -8,7 +8,8 @@ import {
 import {NavigationContainer} from '@react-navigation/native';
 import Home from './views/Home';
 import History from './views/History';
-import Questionnaire from './views/Questionnaire/class';
+import Questionnaire from './views/Questionnaire/index';
+
 const Tab = createBottomTabNavigator();
 
 function App() {

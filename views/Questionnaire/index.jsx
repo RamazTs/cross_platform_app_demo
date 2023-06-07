@@ -1,190 +1,39 @@
-import {View, Text, SafeAreaView, Button} from 'react-native';
-import {useState, useEffect} from 'react';
-// import Question from '../../components/Question';
+import {View, Text, Button, TouchableOpacity} from 'react-native';
+import {Component} from 'react';
+import Question from '../../components/Question/Question';
+import QuestionService from '../../services/QuestionService.js';
 import Voice from '@react-native-community/voice';
 import Tts from 'react-native-tts';
 
-const Questionnaire = () => {
-  const QUESTIONS = [
-    {
-      id: '1',
-      question: "Raynaud's symptoms have caused pain in my fingers",
-      answers: [
-        'Not at all',
-        'A little bit',
-        'Somewhat',
-        'Quite a bit',
-        'Very much',
-      ],
-    },
-    {
-      id: '2',
-      question:
-        "Raynaud's symptoms have made my fingers tender / hypersensitive to touch",
-      answers: [
-        'Not at all',
-        'A little bit',
-        'Somewhat',
-        'Quite a bit',
-        'Very much',
-      ],
-    },
-    {
-      id: '3',
-      question: "Raynaud's symptoms have caused tingling in my fingers",
-      answers: [
-        'Not at all',
-        'A little bit',
-        'Somewhat',
-        'Quite a bit',
-        'Very much',
-      ],
-    },
-    {
-      id: '4',
-      question: "Raynaud's symptoms have made my fingers feel cold",
-      answers: [
-        'Not at all',
-        'A little bit',
-        'Somewhat',
-        'Quite a bit',
-        'Very much',
-      ],
-    },
-    {
-      id: '5',
-      question:
-        "Raynaud's symptoms have made my fingers change one or more colours (white/blue/red/purple etc.)",
-      answers: [
-        'Not at all',
-        'A little bit',
-        'Somewhat',
-        'Quite a bit',
-        'Very much',
-      ],
-    },
-    {
-      id: '6',
-      question: "Raynaud's symptoms have made it difficult to use my fingers",
-      answers: [
-        'Not at all',
-        'A little bit',
-        'Somewhat',
-        'Quite a bit',
-        'Very much',
-      ],
-    },
-  ];
-
-  const [isStarted, setIsStarted] = useState(false);
-  const [isEnded, setIsEnded] = useState(false);
-  const [questionIndex, setQuestionIndex] = useState(0);
-  const [completedQuestions, setCompletedQuestion] = useState([]);
-  const [question_obj, setQuestionObj] = useState(QUESTIONS[0]);
-  const [ttsState, setTtsState] = useState('initilizing');
-  const [found, setFound] = useState(false);
-
-  const startQuestionnaireHandler = () => {
-    //reset and start
-    setQuestionIndex(0);
-    setCompletedQuestion([]);
-    setIsEnded(false);
-    setIsStarted(true);
-  };
-  const updateIndex = () => {
-    setQuestionIndex(idx => {
-      const newIndex = idx + 1;
-      console.log(idx);
-      if (idx + 1 === QUESTIONS.length) {
-        setIsEnded(true);
-        setQuestionObj(QUESTIONS[0]);
-        return 0;
-      }
-      setQuestionObj(QUESTIONS[newIndex]);
-      return newIndex;
-    });
-  };
-
-  const selectAnswerHandler = async (question, answers, selected) => {
-    await stopRecording();
-    answ_obj = {question, answers, selected};
-    setCompletedQuestion(arr => [...arr, answ_obj]);
-  };
-
-  const speechStartHandler = e => {
-    console.log('speechStart successful');
-  };
-
-  const speechResultsHandler = async e => {
-    if (found) return;
-    const {question, answers} = question_obj;
-    const text = e.value[0];
-    for (const answ of answers) {
-      if (text.toLowerCase().includes(answ.toLowerCase())) {
-        setFound(true);
-        console.log('FOUND FOUND FOUND');
-        return;
-        // await selectAnswerHandler(question, answers, answ);
-        // updateIndex();
-      }
-    }
-  };
-
-  const startRecording = async () => {
-    try {
-      await Voice.start('en-Us');
-    } catch (error) {
-      console.log('error', error);
-    }
-  };
-
-  const stopRecording = async () => {
-    try {
-      await Voice.stop();
-    } catch (error) {
-      console.log('error', error);
-    }
-  };
-
-  useEffect(() => {
-    Voice.onSpeechStart = speechStartHandler;
-    Voice.onSpeechResults = speechResultsHandler;
-    Voice.onSpeechPartialResults = speechResultsHandler;
-    Voice.onSpeechEnd = stopRecording;
-    Tts.getInitStatus().then(
-      _ => {
-        Tts.setDucking(true);
-        Tts.addEventListener('tts-start', event => {
-          setTtsState('started');
-          stopRecording();
-        });
-        Tts.addEventListener('tts-finish', event => {
-          setTtsState('finished');
-          startRecording();
-        });
-        Tts.addEventListener('tts-cancel', event => {
-          setTtsState('cancelled');
-          stopRecording();
-        });
-      },
-      err => {
-        if (err.code === 'no_engine') {
-          Tts.requestInstallEngine();
-        }
-      },
-    );
-    return () => {
-      Tts.stop();
-      Voice.destroy().then(Voice.removeAllListeners);
+class Questionnaire extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      isStarted: false,
+      isEnded: false,
+      questionIndex: 0,
+      completedQuestions: [],
+      ttsState: 'initilizing',
     };
-  }, []);
+  }
 
-  useEffect(() => {
-    if (!isStarted || isEnded) return;
+  startQuestionnaireHandler = () => {
+    this.setState(
+      {
+        questionIndex: 0,
+        completedQuestions: [],
+        isEnded: false,
+        isStarted: true,
+      },
+      this.readQuestion.bind(this),
+    );
+  };
 
-    const {question, answers} = question_obj;
+  readQuestion = () => {
+    const {question, answers} = this.state.question_obj;
 
-    const text = 'Question ' + (questionIndex + 1) + '. ' + question + '. ';
+    const text =
+      'Question ' + (this.state.questionIndex + 1) + '. ' + question + '; ';
 
     const ans = answers
       .map((ans, index) => {
@@ -192,73 +41,206 @@ const Questionnaire = () => {
       })
       .join();
     Tts.speak(text + ans);
+  };
 
-    return () => Tts.stop();
-  }, [isStarted, isEnded, question_obj]);
+  updateIndex = () => {
+    Tts.stop();
+    const newIndex = this.state.questionIndex + 1;
+    if (newIndex === this.state.QUESTIONS.length) {
+      this.setState({
+        isEnded: true,
+        question_obj: this.state.QUESTIONS[0],
+        questionIndex: 0,
+      });
+      return;
+    }
+    this.setState(
+      {
+        questionIndex: newIndex,
+        question_obj: this.state.QUESTIONS[newIndex],
+      },
+      this.readQuestion.bind(this),
+    );
+  };
 
-  const beforeStartView = (
-    <>
-      <Button
-        title="Start The Questionnaire"
-        color="#841584"
-        onPress={startQuestionnaireHandler}
-      />
-    </>
-  );
+  selectAnswerHandler = async (question, answers, selected) => {
+    await this.stopRecording();
+    answ_obj = {question, answers, selected};
+    this.setState({
+      completedQuestions: [...this.state.completedQuestions, answ_obj],
+    });
+  };
 
-  const resultView = (
-    <>
-      {completedQuestions.map(q => {
-        return (
-          <Text>
-            {q.question} : {q.selected}
-          </Text>
-        );
-      })}
-      <Button
-        title="Restart Questionnaire"
-        color="green"
-        onPress={startQuestionnaireHandler}
-      />
-    </>
-  );
+  speechStartHandler = e => {
+    console.log('speechStart successful');
+  };
 
-  return (
-    <View style={isStarted ? '' : styles.containerStart}>
-      {!isStarted ? (
-        beforeStartView
-      ) : isEnded ? (
-        resultView
-      ) : question_obj ? (
-        <View>
-          <Text>{question_obj.question}</Text>
-          {question_obj.answers.map(ans => {
-            return (
-              <Button
-                title={`${ans}-${question_obj.id}`}
-                key={`${ans}-${question_obj.id}`}
-                onPress={async () => {
-                  await selectAnswerHandler(
-                    question_obj.question,
-                    question_obj.answers,
-                    ans,
-                  );
-                  updateIndex();
-                }}
-              />
-            );
-          })}
-        </View>
-      ) : undefined}
-    </View>
-  );
-};
+  speechResultsHandler = async e => {
+    if (this.found_2) return;
+    const {question, answers} = this.state.question_obj;
+    const text = e.value[0];
+    for (const answ of answers) {
+      if (text.toLowerCase().includes(answ.toLowerCase())) {
+        this.found_2 = true;
+        console.log('FOUND FOUND FOUND'),
+          this.selectAnswerHandler(question, answers, answ).then(
+            this.updateIndex.bind(this),
+          );
+        return;
+      }
+    }
+  };
 
-const styles = {
-  containerStart: {
-    flex: 1,
-    justifyContent: 'center',
-  },
-};
+  startRecording = async () => {
+    try {
+      await Voice.start('en-Us');
+    } catch (error) {
+      console.log('error', error);
+    }
+  };
+
+  stopRecording = async () => {
+    try {
+      await Voice.stop();
+    } catch (error) {
+      console.log('error', error);
+    }
+  };
+
+  ttsStartHandler = async event => {
+    this.setState({
+      ttsState: 'started',
+    });
+    await this.stopRecording();
+    this.found_2 = false;
+  };
+
+  ttsFinishHandler = event => {
+    this.setState({
+      ttsState: 'finished',
+    });
+    this.startRecording();
+  };
+
+  ttsCancelHandler = event => {
+    this.setState({
+      ttsState: 'cancelled',
+    });
+    this.stopRecording();
+  };
+
+  componentDidMount() {
+    console.log('MOUNT');
+    const questionService = new QuestionService();
+    questionService.fetchQuestions().then(questions => {
+      this.setState(
+        {
+          QUESTIONS: questions,
+          question_obj: questions[0],
+        },
+        () => {
+          Voice.onSpeechStart = this.speechStartHandler.bind(this);
+          Voice.onSpeechResults = this.speechResultsHandler.bind(this);
+          Voice.onSpeechPartialResults = this.speechResultsHandler.bind(this);
+          Voice.onSpeechEnd = this.stopRecording.bind(this);
+          Tts.getInitStatus().then(
+            _ => {
+              Tts.setDucking(true);
+              Tts.addEventListener(
+                'tts-start',
+                this.ttsStartHandler.bind(this),
+              );
+              Tts.addEventListener(
+                'tts-finish',
+                this.ttsFinishHandler.bind(this),
+              );
+              Tts.addEventListener(
+                'tts-cancel',
+                this.ttsCancelHandler.bind(this),
+              );
+            },
+            err => {
+              if (err.code === 'no_engine') {
+                Tts.requestInstallEngine();
+              }
+            },
+          );
+        },
+      );
+    });
+  }
+
+  componentWillUnmount() {
+    Tts.stop();
+    Voice.destroy().then(Voice.removeAllListeners);
+  }
+
+  render() {
+    return (
+      <View
+        style={
+          this.state.isStarted
+            ? this.styles.containerQuestion
+            : this.styles.containerStart
+        }>
+        {!this.state.isStarted ? (
+          <TouchableOpacity
+            onPress={this.startQuestionnaireHandler}
+            style={this.styles.start}>
+            <Text style={{color: 'white', fontWeight: 'bold'}}>
+              Start The Questionnaire
+            </Text>
+          </TouchableOpacity>
+        ) : this.state.isEnded ? (
+          <>
+            {this.state.completedQuestions.map((q, i) => {
+              return (
+                <Text
+                  key={q.question + '-' + q.selected}
+                  style={{marginBottom: 5}}>
+                  {i + 1 + '. '}
+                  {q.question} : {q.selected}
+                </Text>
+              );
+            })}
+            <TouchableOpacity
+              onPress={this.startQuestionnaireHandler}
+              style={{...this.styles.start, marginTop: 20}}>
+              <Text style={{color: 'white', fontWeight: 'bold'}}>
+                Restart Questionnaire
+              </Text>
+            </TouchableOpacity>
+          </>
+        ) : this.state.question_obj ? (
+          <Question
+            questionIndex={this.state.questionIndex}
+            question_obj={this.state.question_obj}
+            selectAnswerHandler={this.selectAnswerHandler}
+            updateIndex={this.updateIndex}
+          />
+        ) : undefined}
+      </View>
+    );
+  }
+
+  styles = {
+    containerStart: {
+      flex: 1,
+      justifyContent: 'center',
+      padding: 24,
+    },
+    containerQuestion: {
+      padding: 24,
+    },
+    start: {
+      backgroundColor: 'black',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 8,
+      borderRadius: 8,
+    },
+  };
+}
 
 export default Questionnaire;
