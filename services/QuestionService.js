@@ -74,6 +74,50 @@ class QuestionService {
           'Very much',
         ],
       },
+      // {
+      //   id: '7',
+      //   question: "",
+      //   answers: [
+      //     'Not at all',
+      //     'A little bit',
+      //     'Somewhat',
+      //     'Quite a bit',
+      //     'Very much',
+      //   ],
+      // },
+      // {
+      //   id: '8',
+      //   question: "",
+      //   answers: [
+      //     'Not at all',
+      //     'A little bit',
+      //     'Somewhat',
+      //     'Quite a bit',
+      //     'Very much',
+      //   ],
+      // },
+      // {
+      //   id: '9',
+      //   question: "",
+      //   answers: [
+      //     'Not at all',
+      //     'A little bit',
+      //     'Somewhat',
+      //     'Quite a bit',
+      //     'Very much',
+      //   ],
+      // },
+      // {
+      //   id: '10',
+      //   question: "",
+      //   answers: [
+      //     'Not at all',
+      //     'A little bit',
+      //     'Somewhat',
+      //     'Quite a bit',
+      //     'Very much',
+      //   ],
+      // },
     ];
     return Promise.resolve(this.questions);
   }

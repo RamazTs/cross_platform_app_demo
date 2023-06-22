@@ -47,6 +47,7 @@ class Questionnaire extends Component {
     Tts.stop();
     const newIndex = this.state.questionIndex + 1;
     if (newIndex === this.state.QUESTIONS.length) {
+      this.props.setHistory(prev => [...prev, {completedQuestions: this.state.completedQuestions, timestamp: new Date().toLocaleString()}]);
       this.setState({
         isEnded: true,
         question_obj: this.state.QUESTIONS[0],
@@ -130,7 +131,7 @@ class Questionnaire extends Component {
   };
 
   componentDidMount() {
-    console.log('MOUNT');
+    console.log('COMPONENT MOUNTED');
     const questionService = new QuestionService();
     questionService.fetchQuestions().then(questions => {
       this.setState(
@@ -174,6 +175,34 @@ class Questionnaire extends Component {
     Tts.stop();
     Voice.destroy().then(Voice.removeAllListeners);
   }
+
+  // endQuestionnaire = () => {
+    // this.addTimestamp(); // add timestamp to history when the questionnaire ends
+    // console.log("HERE")
+    // this.props.setHistory(prev => [...prev, ]
+
+  // updateIndex = () => {
+  //   Tts.stop();
+  //   const newIndex = this.state.questionIndex + 1;
+  //   if (newIndex === this.state.QUESTIONS.length) {
+  //     this.endQuestionnaire();
+  //     return;
+  //   }
+  //   this.setState(
+  //     {
+  //       questionIndex: newIndex,
+  //       question_obj: this.state.QUESTIONS[newIndex],
+  //     },
+  //     this.readQuestion.bind(this),
+  //   );
+  // };
+
+//   addTimestamp = () => {
+//     const timestamp = new Date().toLocaleString();
+//     this.setState(prevState => ({
+//       history: [...prevState.completedQuestions, `Timestamp: ${timestamp}`],
+//     }));
+// };
 
   render() {
     return (

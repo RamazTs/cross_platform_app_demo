@@ -18,15 +18,15 @@ function App() {
   return (
     <NavigationContainer theme={scheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Tab.Navigator>
-        <Tab.Screen
+        {/* <Tab.Screen
           name="Record"
           children={() => <Home setHistory={setHistory} />}
-        />
+        /> */}
         <Tab.Screen
           name="History"
           children={() => <History history={history} />}
         />
-        <Tab.Screen name="Questionnaire" children={() => <Questionnaire />} />
+        <Tab.Screen name="Questionnaire" children={() => <Questionnaire setHistory={setHistory}/>} />
       </Tab.Navigator>
     </NavigationContainer>
   );

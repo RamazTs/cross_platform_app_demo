@@ -1,3 +1,4 @@
+import React from 'react';
 import {
   View,
   Text,
@@ -8,21 +9,28 @@ import {
 const History = props => {
   const {history} = props;
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <View style={styles.container}>
         {history.length > 0 ? (
-          history.map((h, i) => (
-            <Text style={styles.row} key={i}>
-              {h}
+          history.map((histArray, i) => {
+            return <>
+              <Text key={histArray.timestamp}> Questionaire completed at: {histArray.timestamp}</Text>
+            {histArray.completedQuestions.map((q, indexQ) => {
+              return <Text style={styles.row}
+              key={histArray.timestamp + q.question + q.selected}
+                 >
+              {indexQ + 1 + '. '}
+                  {q.question} : {q.selected}
             </Text>
-          ))
+            })}
+            </>
+        })
         ) : (
           <Text>History Empty</Text>
         )}
       </View>
-    </TouchableWithoutFeedback>
   );
 };
+
 const styles = StyleSheet.create({
   container: {},
   row: {
