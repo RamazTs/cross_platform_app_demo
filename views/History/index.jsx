@@ -14,8 +14,9 @@ const History = props => {
           history.map((histArray, i) => {
             return <>
               <Text key={histArray.timestamp}> Questionaire completed at: {histArray.timestamp}</Text>
-              <Text>Temperature: {histArray.weather.temperature} °K</Text>
-              <Text>Visibility: {histArray.weather.visibility} m</Text>
+              <Text> Temperature: {histArray.weather.temperature} °K</Text>
+              <Text> Visibility: {histArray.weather.visibility} m</Text>
+              <Text> Location: {histArray.geoLoc.coords.latitude} {histArray.geoLoc.coords.longitude}</Text>
             {histArray.completedQuestions.map((q, indexQ) => {
               return <Text style={styles.row}
               key={histArray.timestamp + q.question + q.selected}

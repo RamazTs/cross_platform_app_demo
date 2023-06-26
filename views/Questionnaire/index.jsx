@@ -87,6 +87,7 @@ class Questionnaire extends Component {
           completedQuestions: this.state.completedQuestions,
           weather: weatherData,
           timestamp: new Date().toLocaleString(),
+          geoLoc : geoLocation
         },
       ]);
       this.setState({
