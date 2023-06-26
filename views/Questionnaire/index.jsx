@@ -1,9 +1,10 @@
 import {View, Text, Button, TouchableOpacity} from 'react-native';
 import {Component} from 'react';
-import Question from '../../components/Question/Question';
+import Question from '../../components/Question/Question.jsx';
 import QuestionService from '../../services/QuestionService.js';
 import Voice from '@react-native-community/voice';
 import Tts from 'react-native-tts';
+import Geolocation from '@react-native-community/geolocation';
 
 class Questionnaire extends Component {
   constructor(props) {
@@ -14,6 +15,21 @@ class Questionnaire extends Component {
       questionIndex: 0,
       completedQuestions: [],
       ttsState: 'initilizing',
+    };
+    this.getWeather = this.getWeather.bind(this);
+  }
+
+  getWeather = async (lat, lon) => {
+    const response = await fetch(
+      `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=0bb2954984e58b4696605e92623b8626`
+    );
+    if (!response.ok) {
+      throw new Error('OpenWeather API request failed');
+    }
+    const data = await response.json();
+    return {
+      temperature: data.main.temp,
+      visibility: data.visibility,
     };
   }
 
@@ -43,11 +59,13 @@ class Questionnaire extends Component {
     Tts.speak(text + ans);
   };
 
-  updateIndex = () => {
+  updateIndex = async () => {
     Tts.stop();
     const newIndex = this.state.questionIndex + 1;
     if (newIndex === this.state.QUESTIONS.length) {
-      this.props.setHistory(prev => [...prev, {completedQuestions: this.state.completedQuestions, timestamp: new Date().toLocaleString()}]);
+      const weatherData = await this.getWeather(32.715736, -117.161087);
+      Geolocation.getCurrentPosition(info => console.log(info));
+      this.props.setHistory(prev => [...prev, {completedQuestions: this.state.completedQuestions, weather: weatherData, timestamp: new Date().toLocaleString()}]);
       this.setState({
         isEnded: true,
         question_obj: this.state.QUESTIONS[0],
@@ -175,34 +193,6 @@ class Questionnaire extends Component {
     Tts.stop();
     Voice.destroy().then(Voice.removeAllListeners);
   }
-
-  // endQuestionnaire = () => {
-    // this.addTimestamp(); // add timestamp to history when the questionnaire ends
-    // console.log("HERE")
-    // this.props.setHistory(prev => [...prev, ]
-
-  // updateIndex = () => {
-  //   Tts.stop();
-  //   const newIndex = this.state.questionIndex + 1;
-  //   if (newIndex === this.state.QUESTIONS.length) {
-  //     this.endQuestionnaire();
-  //     return;
-  //   }
-  //   this.setState(
-  //     {
-  //       questionIndex: newIndex,
-  //       question_obj: this.state.QUESTIONS[newIndex],
-  //     },
-  //     this.readQuestion.bind(this),
-  //   );
-  // };
-
-//   addTimestamp = () => {
-//     const timestamp = new Date().toLocaleString();
-//     this.setState(prevState => ({
-//       history: [...prevState.completedQuestions, `Timestamp: ${timestamp}`],
-//     }));
-// };
 
   render() {
     return (
