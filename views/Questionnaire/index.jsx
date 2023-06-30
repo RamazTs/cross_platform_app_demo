@@ -15,8 +15,8 @@ class Questionnaire extends Component {
       questionIndex: 0,
       completedQuestions: [],
       ttsState: 'initilizing',
+      ignoreVoiceResults: false,
     };
-    this.getWeather = this.getWeather.bind(this);
   }
 
   getWeather = async (lat, lon) => {
@@ -40,7 +40,6 @@ class Questionnaire extends Component {
         if (error) {
           return reject(error);
         }
-        console.log(info);
         return resolve(info);
       });
     });
@@ -73,7 +72,7 @@ class Questionnaire extends Component {
   };
 
   updateIndex = async () => {
-    Tts.stop();
+    await Tts.stop();
     const newIndex = this.state.questionIndex + 1;
     if (newIndex === this.state.QUESTIONS.length) {
       const geoLocation = await this.getGeoLocation();
@@ -87,7 +86,7 @@ class Questionnaire extends Component {
           completedQuestions: this.state.completedQuestions,
           weather: weatherData,
           timestamp: new Date().toLocaleString(),
-          geoLoc : geoLocation
+          geoLoc: geoLocation,
         },
       ]);
       this.setState({
@@ -97,6 +96,7 @@ class Questionnaire extends Component {
       });
       return;
     }
+
     this.setState(
       {
         questionIndex: newIndex,
@@ -119,42 +119,48 @@ class Questionnaire extends Component {
   };
 
   speechResultsHandler = async e => {
-    if (this.found_2) return;
+    if (this.found_2 || this.state.ignoreVoiceResults) return;
     const {question, answers} = this.state.question_obj;
     const text = e.value[0];
     for (const answ of answers) {
       if (text.toLowerCase().includes(answ.toLowerCase())) {
         this.found_2 = true;
-        console.log('FOUND FOUND FOUND'),
-          this.selectAnswerHandler(question, answers, answ).then(
-            this.updateIndex.bind(this),
-          );
+        console.log('FOUND FOUND FOUND');
+        await this.selectAnswerHandler(question, answers, answ);
+        await this.updateIndex();
         return;
       }
     }
   };
 
-  startRecording = async () => {
-    try {
-      await Voice.start('en-Us');
-    } catch (error) {
-      console.log('error', error);
-    }
+  startRecording = () => {
+    return new Promise((resolve, reject) => {
+      this.setState({ignoreVoiceResults: false}, () =>
+        Voice.start('en-Us')
+          .then(started => resolve(started))
+          .catch(error => reject(error)),
+      );
+    });
   };
 
-  stopRecording = async () => {
-    try {
-      await Voice.stop();
-    } catch (error) {
-      console.log('error', error);
-    }
+  stopRecording = () => {
+    return new Promise((resolve, reject) => {
+      this.setState({ignoreVoiceResults: true}, () => {
+        console.log('Stopping Recording');
+        Voice.stop()
+          .then(stopped => {
+            console.log('Recording stopped...');
+            resolve(stopped);
+          })
+          .catch(error => reject(error));
+      });
+    });
   };
 
   ttsStartHandler = async event => {
     this.setState({
       ttsState: 'started',
     });
-    await this.stopRecording();
     this.found_2 = false;
   };
 
@@ -172,6 +178,10 @@ class Questionnaire extends Component {
     this.stopRecording();
   };
 
+  speechEnd = () => {
+    console.log('Speech End');
+  };
+
   componentDidMount() {
     console.log('COMPONENT MOUNTED');
     const questionService = new QuestionService();
@@ -183,9 +193,8 @@ class Questionnaire extends Component {
         },
         () => {
           Voice.onSpeechStart = this.speechStartHandler.bind(this);
-          Voice.onSpeechResults = this.speechResultsHandler.bind(this);
           Voice.onSpeechPartialResults = this.speechResultsHandler.bind(this);
-          Voice.onSpeechEnd = this.stopRecording.bind(this);
+          Voice.onSpeechEnd = this.speechEnd.bind(this);
           Tts.getInitStatus().then(
             _ => {
               Tts.setDucking(true);
