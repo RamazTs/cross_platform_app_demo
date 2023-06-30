@@ -134,6 +134,7 @@ class Questionnaire extends Component {
   };
 
   speechResultsHandler = async e => {
+    console.log(e);
     if (this.found_2 || this.state.ignoreVoiceResults) return;
     const {question, answers} = this.state.question_obj;
     const text = e.value[0];
