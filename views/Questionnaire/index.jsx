@@ -16,6 +16,20 @@ class Questionnaire extends Component {
       completedQuestions: [],
       ttsState: 'initilizing',
       ignoreVoiceResults: false,
+      numbersInWords: {
+        one: 1,
+        to: 2,
+        too: 2,
+        two: 2,
+        three: 3,
+        four: 4,
+        for: 4,
+        five: 5,
+        six: 6,
+        seven: 7,
+        eight: 8,
+        nine: 9,
+      },
     };
   }
 
@@ -65,7 +79,8 @@ class Questionnaire extends Component {
 
     const ans = answers
       .map((ans, index) => {
-        return index + 1 + ', ' + ans;
+        if (this.state.questionIndex == 0) return index + 1 + ', ' + ans;
+        return index + 1 + ', ';
       })
       .join();
     Tts.speak(text + ans);
@@ -122,13 +137,30 @@ class Questionnaire extends Component {
     if (this.found_2 || this.state.ignoreVoiceResults) return;
     const {question, answers} = this.state.question_obj;
     const text = e.value[0];
-    for (const answ of answers) {
-      if (text.toLowerCase().includes(answ.toLowerCase())) {
-        this.found_2 = true;
-        console.log('FOUND FOUND FOUND');
-        await this.selectAnswerHandler(question, answers, answ);
-        await this.updateIndex();
-        return;
+    const words = text.split(' ');
+    const number = words[words.length - 1].toLowerCase();
+    if (
+      this.state.numbersInWords[number] &&
+      this.state.numbersInWords[number] <= answers.length
+    ) {
+      this.found_2 = true;
+      console.log('FOUND FOUND FOUND');
+      await this.selectAnswerHandler(
+        question,
+        answers,
+        answers[this.state.numbersInWords[number] - 1],
+      );
+      await this.updateIndex();
+      return;
+    } else {
+      for (const answ of answers) {
+        if (text.toLowerCase().includes(answ.toLowerCase())) {
+          this.found_2 = true;
+          console.log('FOUND FOUND FOUND');
+          await this.selectAnswerHandler(question, answers, answ);
+          await this.updateIndex();
+          return;
+        }
       }
     }
   };
