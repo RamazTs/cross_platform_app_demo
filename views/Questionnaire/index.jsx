@@ -1,9 +1,10 @@
-import {View, Text, Button, TouchableOpacity} from 'react-native';
+import {View, Text, Button, TouchableOpacity, Platform} from 'react-native';
 import {Component} from 'react';
-import Question from '../../components/Question/Question';
+import Question from '../../components/Question/Question.jsx';
 import QuestionService from '../../services/QuestionService.js';
 import Voice from '@react-native-community/voice';
 import Tts from 'react-native-tts';
+import Geolocation from '@react-native-community/geolocation';
 
 class Questionnaire extends Component {
   constructor(props) {
@@ -14,8 +15,49 @@ class Questionnaire extends Component {
       questionIndex: 0,
       completedQuestions: [],
       ttsState: 'initilizing',
+      ignoreVoiceResults: false,
+      numbersInWords: {
+        one: 1,
+        to: 2,
+        too: 2,
+        two: 2,
+        three: 3,
+        four: 4,
+        for: 4,
+        five: 5,
+        six: 6,
+        seven: 7,
+        eight: 8,
+        nine: 9,
+      },
     };
   }
+
+  getWeather = async (lat, lon) => {
+    const response = await fetch(
+      `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=0bb2954984e58b4696605e92623b8626`,
+    );
+    if (!response.ok) {
+      throw new Error('OpenWeather API request failed');
+    }
+    const data = await response.json();
+    console.log(data);
+    return {
+      temperature: data.main.temp,
+      visibility: data.visibility,
+    };
+  };
+
+  getGeoLocation = () => {
+    return new Promise((resolve, reject) => {
+      Geolocation.getCurrentPosition((info, error) => {
+        if (error) {
+          return reject(error);
+        }
+        return resolve(info);
+      });
+    });
+  };
 
   startQuestionnaireHandler = () => {
     this.setState(
@@ -37,16 +79,31 @@ class Questionnaire extends Component {
 
     const ans = answers
       .map((ans, index) => {
-        return index + 1 + ', ' + ans;
+        if (this.state.questionIndex == 0) return index + 1 + ', ' + ans;
+        return index + 1 + ', ';
       })
       .join();
     Tts.speak(text + ans);
   };
 
-  updateIndex = () => {
-    Tts.stop();
+  updateIndex = async () => {
+    await Tts.stop();
     const newIndex = this.state.questionIndex + 1;
     if (newIndex === this.state.QUESTIONS.length) {
+      const geoLocation = await this.getGeoLocation();
+      const weatherData = await this.getWeather(
+        geoLocation.coords.latitude,
+        geoLocation.coords.longitude,
+      );
+      this.props.setHistory(prev => [
+        ...prev,
+        {
+          completedQuestions: this.state.completedQuestions,
+          weather: weatherData,
+          timestamp: new Date().toLocaleString(),
+          geoLoc: geoLocation,
+        },
+      ]);
       this.setState({
         isEnded: true,
         question_obj: this.state.QUESTIONS[0],
@@ -54,6 +111,7 @@ class Questionnaire extends Component {
       });
       return;
     }
+
     this.setState(
       {
         questionIndex: newIndex,
@@ -76,42 +134,66 @@ class Questionnaire extends Component {
   };
 
   speechResultsHandler = async e => {
-    if (this.found_2) return;
+    console.log(e);
+    if (this.found_2 || this.state.ignoreVoiceResults) return;
     const {question, answers} = this.state.question_obj;
     const text = e.value[0];
-    for (const answ of answers) {
-      if (text.toLowerCase().includes(answ.toLowerCase())) {
-        this.found_2 = true;
-        console.log('FOUND FOUND FOUND'),
-          this.selectAnswerHandler(question, answers, answ).then(
-            this.updateIndex.bind(this),
-          );
-        return;
+    const words = text.split(' ');
+    const number = words[words.length - 1].toLowerCase();
+    if (
+      this.state.numbersInWords[number] &&
+      this.state.numbersInWords[number] <= answers.length
+    ) {
+      this.found_2 = true;
+      console.log('FOUND FOUND FOUND');
+      await this.selectAnswerHandler(
+        question,
+        answers,
+        answers[this.state.numbersInWords[number] - 1],
+      );
+      await this.updateIndex();
+      return;
+    } else {
+      for (const answ of answers) {
+        if (text.toLowerCase().includes(answ.toLowerCase())) {
+          this.found_2 = true;
+          console.log('FOUND FOUND FOUND');
+          await this.selectAnswerHandler(question, answers, answ);
+          await this.updateIndex();
+          return;
+        }
       }
     }
   };
 
-  startRecording = async () => {
-    try {
-      await Voice.start('en-Us');
-    } catch (error) {
-      console.log('error', error);
-    }
+  startRecording = () => {
+    return new Promise((resolve, reject) => {
+      this.setState({ignoreVoiceResults: false}, () =>
+        Voice.start('en-Us')
+          .then(started => resolve(started))
+          .catch(error => reject(error)),
+      );
+    });
   };
 
-  stopRecording = async () => {
-    try {
-      await Voice.stop();
-    } catch (error) {
-      console.log('error', error);
-    }
+  stopRecording = () => {
+    return new Promise((resolve, reject) => {
+      this.setState({ignoreVoiceResults: true}, () => {
+        console.log('Stopping Recording');
+        Voice.stop()
+          .then(stopped => {
+            console.log('Recording stopped...');
+            resolve(stopped);
+          })
+          .catch(error => reject(error));
+      });
+    });
   };
 
   ttsStartHandler = async event => {
     this.setState({
       ttsState: 'started',
     });
-    await this.stopRecording();
     this.found_2 = false;
   };
 
@@ -129,8 +211,12 @@ class Questionnaire extends Component {
     this.stopRecording();
   };
 
+  speechEnd = () => {
+    console.log('Speech End');
+  };
+
   componentDidMount() {
-    console.log('MOUNT');
+    console.log('COMPONENT MOUNTED');
     const questionService = new QuestionService();
     questionService.fetchQuestions().then(questions => {
       this.setState(
@@ -140,9 +226,10 @@ class Questionnaire extends Component {
         },
         () => {
           Voice.onSpeechStart = this.speechStartHandler.bind(this);
-          Voice.onSpeechResults = this.speechResultsHandler.bind(this);
+          if (Platform.OS != 'ios')
+            Voice.onSpeechResults = this.speechResultsHandler.bind(this);
           Voice.onSpeechPartialResults = this.speechResultsHandler.bind(this);
-          Voice.onSpeechEnd = this.stopRecording.bind(this);
+          Voice.onSpeechEnd = this.speechEnd.bind(this);
           Tts.getInitStatus().then(
             _ => {
               Tts.setDucking(true);
