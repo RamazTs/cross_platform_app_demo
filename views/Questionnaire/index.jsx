@@ -1,4 +1,4 @@
-import {View, Text, Button, TouchableOpacity} from 'react-native';
+import {View, Text, Button, TouchableOpacity, Platform} from 'react-native';
 import {Component} from 'react';
 import Question from '../../components/Question/Question.jsx';
 import QuestionService from '../../services/QuestionService.js';
@@ -193,6 +193,8 @@ class Questionnaire extends Component {
         },
         () => {
           Voice.onSpeechStart = this.speechStartHandler.bind(this);
+          if (Platform.OS != 'ios')
+            Voice.onSpeechResults = this.speechResultsHandler.bind(this);
           Voice.onSpeechPartialResults = this.speechResultsHandler.bind(this);
           Voice.onSpeechEnd = this.speechEnd.bind(this);
           Tts.getInitStatus().then(
