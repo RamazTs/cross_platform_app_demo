@@ -106,8 +106,7 @@ const Home = props => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+  container: {  
     backgroundColor: '#fff',
     padding: 24,
   },

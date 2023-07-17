@@ -5,6 +5,7 @@ import QuestionService from '../../services/QuestionService.js';
 import Voice from '@react-native-community/voice';
 import Tts from 'react-native-tts';
 import Geolocation from '@react-native-community/geolocation';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 class Questionnaire extends Component {
   constructor(props) {
@@ -33,20 +34,48 @@ class Questionnaire extends Component {
     };
   }
 
+  // getWeather = async (lat, lon) => {
+  //   const response = await fetch(
+  //     //`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid= 0bb2954984e58b4696605e92623b8626`,
+  //     'http://api.openweathermap.org/geo/1.0/reverse?lat={lat}&lon={lon}&limit={1}&appid={0bb2954984e58b4696605e92623b8626}',
+  //   );
+  //   if (!response.ok) {
+  //     throw new Error('OpenWeather API request failed');
+  //   }
+  //   const data = await response.json();
+  //   console.log(data);
+  //   return {
+  //     temperature: data.main.temp,
+  //     visibility: data.visibility,
+  //   };
+  // };
+
   getWeather = async (lat, lon) => {
     const response = await fetch(
-      `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=0bb2954984e58b4696605e92623b8626`,
+        `http://api.openweathermap.org/geo/1.0/reverse?lat=${lat}&lon=${lon}&limit=1&appid=0bb2954984e58b4696605e92623b8626`,
     );
     if (!response.ok) {
       throw new Error('OpenWeather API request failed');
     }
-    const data = await response.json();
-    console.log(data);
+    const locationData = await response.json();
+
+    const weatherResponse = await fetch(
+        `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=0bb2954984e58b4696605e92623b8626`
+    );
+    const weatherData = await weatherResponse.json();
+
     return {
-      temperature: data.main.temp,
-      visibility: data.visibility,
+      // city: locationData[0].name,
+      // temperature: weatherData.main.temp,
+      // visibility: weatherData.visibility,
+      city: weatherData.name,
+      country: weatherData.sys.country,
+      temperature: ((weatherData.main.temp - 273.15) * 9/5 + 32).toFixed(2),  // Convert from Kelvin to Fahrenheit
+      description: weatherData.weather[0].description,
     };
   };
+
+  
 
   getGeoLocation = () => {
     return new Promise((resolve, reject) => {
@@ -95,31 +124,87 @@ class Questionnaire extends Component {
         geoLocation.coords.latitude,
         geoLocation.coords.longitude,
       );
-      this.props.setHistory(prev => [
-        ...prev,
-        {
-          completedQuestions: this.state.completedQuestions,
-          weather: weatherData,
-          timestamp: new Date().toLocaleString(),
-          geoLoc: geoLocation,
-        },
-      ]);
-      this.setState({
-        isEnded: true,
-        question_obj: this.state.QUESTIONS[0],
-        questionIndex: 0,
-      });
-      return;
-    }
+// Format existing data into a history item
+const historyItem = {
+  completedQuestions: this.state.completedQuestions,
+  weather: weatherData,
+  timestamp: new Date().toLocaleString(),
+  geoLoc: geoLocation,
+};
 
-    this.setState(
-      {
-        questionIndex: newIndex,
-        question_obj: this.state.QUESTIONS[newIndex],
-      },
-      this.readQuestion.bind(this),
-    );
-  };
+this.props.setHistory(prev => [
+  ...prev,
+  historyItem,
+]);
+
+// Fetch the existing questionnaire history from AsyncStorage
+const existingHistoryJSON = await AsyncStorage.getItem('questionnaireHistory');
+let existingHistory = existingHistoryJSON ? JSON.parse(existingHistoryJSON) : [];
+
+const newAsyncStorageItem = {
+  "Ambient Data": {
+    date: historyItem.timestamp,
+    temperature: historyItem.weather.temperature,
+    description: historyItem.weather.description,
+    location: `${historyItem.weather.city}, ${historyItem.weather.country}`,
+  },
+  "Patient Data": historyItem.completedQuestions,
+};
+
+// Update the existing history
+existingHistory = [...existingHistory, newAsyncStorageItem];
+
+// Save updated history to AsyncStorage
+await AsyncStorage.setItem('questionnaireHistory', JSON.stringify(existingHistory));
+
+console.log(JSON.stringify(existingHistory, null, 2));
+// Reset state
+this.setState({
+  isEnded: true,
+  question_obj: this.state.QUESTIONS[0],
+  questionIndex: 0,
+});
+return;
+}
+
+this.setState(
+{
+  questionIndex: newIndex,
+  question_obj: this.state.QUESTIONS[newIndex],
+},
+this.readQuestion.bind(this),
+);
+};
+  //     this.props.setHistory(prev => [
+  //       ...prev,
+  //       {
+  //         completedQuestions: this.state.completedQuestions,
+  //         weather: weatherData,
+  //         timestamp: new Date().toLocaleString(),
+  //         geoLoc: geoLocation,
+  //       },
+  //     ]);
+  //     this.setState({
+  //       isEnded: true,
+  //       question_obj: this.state.QUESTIONS[0],
+  //       questionIndex: 0,
+  //     });
+  //     return;
+  //   }
+
+  //   this.setState(
+  //     {
+  //       questionIndex: newIndex,
+  //       question_obj: this.state.QUESTIONS[newIndex],
+  //     },
+  //     this.readQuestion.bind(this),
+  //   );
+  // };
+
+  viewStoredData = async () => {
+    const history = await AsyncStorage.getItem('questionnaireHistory');
+    console.log(JSON.parse(history));
+}
 
   selectAnswerHandler = async (question, answers, selected) => {
     await this.stopRecording();
