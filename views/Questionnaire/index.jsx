@@ -15,6 +15,7 @@ class Questionnaire extends Component {
       isEnded: false,
       questionIndex: 0,
       completedQuestions: [],
+      locationData: null,
       ttsState: 'initilizing',
       ignoreVoiceResults: false,
       numbersInWords: {
@@ -34,22 +35,6 @@ class Questionnaire extends Component {
     };
   }
 
-  // getWeather = async (lat, lon) => {
-  //   const response = await fetch(
-  //     //`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid= 0bb2954984e58b4696605e92623b8626`,
-  //     'http://api.openweathermap.org/geo/1.0/reverse?lat={lat}&lon={lon}&limit={1}&appid={0bb2954984e58b4696605e92623b8626}',
-  //   );
-  //   if (!response.ok) {
-  //     throw new Error('OpenWeather API request failed');
-  //   }
-  //   const data = await response.json();
-  //   console.log(data);
-  //   return {
-  //     temperature: data.main.temp,
-  //     visibility: data.visibility,
-  //   };
-  // };
-
   getWeather = async (lat, lon) => {
     const response = await fetch(
         `http://api.openweathermap.org/geo/1.0/reverse?lat=${lat}&lon=${lon}&limit=1&appid=0bb2954984e58b4696605e92623b8626`,
@@ -65,12 +50,9 @@ class Questionnaire extends Component {
     const weatherData = await weatherResponse.json();
 
     return {
-      // city: locationData[0].name,
-      // temperature: weatherData.main.temp,
-      // visibility: weatherData.visibility,
       city: weatherData.name,
       country: weatherData.sys.country,
-      temperature: ((weatherData.main.temp - 273.15) * 9/5 + 32).toFixed(2),  // Convert from Kelvin to Fahrenheit
+      temperature: ((weatherData.main.temp - 273.15) * 9/5 + 32).toFixed(2), 
       description: weatherData.weather[0].description,
     };
   };
@@ -115,91 +97,38 @@ class Questionnaire extends Component {
     Tts.speak(text + ans);
   };
 
-  updateIndex = async () => {
-    await Tts.stop();
-    const newIndex = this.state.questionIndex + 1;
-    if (newIndex === this.state.QUESTIONS.length) {
-      const geoLocation = await this.getGeoLocation();
-      const weatherData = await this.getWeather(
-        geoLocation.coords.latitude,
-        geoLocation.coords.longitude,
-      );
-// Format existing data into a history item
-const historyItem = {
-  completedQuestions: this.state.completedQuestions,
-  weather: weatherData,
-  timestamp: new Date().toLocaleString(),
-  geoLoc: geoLocation,
+updateIndex = async () => {
+  await Tts.stop();
+  const newIndex = this.state.questionIndex + 1;
+  if (newIndex === this.state.QUESTIONS.length) {
+    const geoLocation = await this.getGeoLocation();
+    const weatherData = await this.getWeather(
+      geoLocation.coords.latitude,
+      geoLocation.coords.longitude,
+    );
+
+    // Store completed questionnaire and location/weather data in the state
+    this.setState({
+      isEnded: true,
+      question_obj: this.state.QUESTIONS[0],
+      questionIndex: 0,
+      completedData: {
+        questions: this.state.completedQuestions,
+        timestamp: new Date().toLocaleString(),
+        weather: weatherData,
+      },
+    });
+    return;
+  }
+
+  this.setState(
+    {
+      questionIndex: newIndex,
+      question_obj: this.state.QUESTIONS[newIndex],
+    },
+    this.readQuestion.bind(this),
+  );
 };
-
-this.props.setHistory(prev => [
-  ...prev,
-  historyItem,
-]);
-
-// Fetch the existing questionnaire history from AsyncStorage
-const existingHistoryJSON = await AsyncStorage.getItem('questionnaireHistory');
-let existingHistory = existingHistoryJSON ? JSON.parse(existingHistoryJSON) : [];
-
-const newAsyncStorageItem = {
-  "Ambient Data": {
-    date: historyItem.timestamp,
-    temperature: historyItem.weather.temperature,
-    description: historyItem.weather.description,
-    location: `${historyItem.weather.city}, ${historyItem.weather.country}`,
-  },
-  "Patient Data": historyItem.completedQuestions,
-};
-
-// Update the existing history
-existingHistory = [...existingHistory, newAsyncStorageItem];
-
-// Save updated history to AsyncStorage
-await AsyncStorage.setItem('questionnaireHistory', JSON.stringify(existingHistory));
-
-console.log(JSON.stringify(existingHistory, null, 2));
-// Reset state
-this.setState({
-  isEnded: true,
-  question_obj: this.state.QUESTIONS[0],
-  questionIndex: 0,
-});
-return;
-}
-
-this.setState(
-{
-  questionIndex: newIndex,
-  question_obj: this.state.QUESTIONS[newIndex],
-},
-this.readQuestion.bind(this),
-);
-};
-  //     this.props.setHistory(prev => [
-  //       ...prev,
-  //       {
-  //         completedQuestions: this.state.completedQuestions,
-  //         weather: weatherData,
-  //         timestamp: new Date().toLocaleString(),
-  //         geoLoc: geoLocation,
-  //       },
-  //     ]);
-  //     this.setState({
-  //       isEnded: true,
-  //       question_obj: this.state.QUESTIONS[0],
-  //       questionIndex: 0,
-  //     });
-  //     return;
-  //   }
-
-  //   this.setState(
-  //     {
-  //       questionIndex: newIndex,
-  //       question_obj: this.state.QUESTIONS[newIndex],
-  //     },
-  //     this.readQuestion.bind(this),
-  //   );
-  // };
 
   viewStoredData = async () => {
     const history = await AsyncStorage.getItem('questionnaireHistory');
@@ -363,14 +292,18 @@ this.readQuestion.bind(this),
               Start The Questionnaire
             </Text>
           </TouchableOpacity>
-        ) : this.state.isEnded ? (
+        ) : this.state.isEnded && this.state.completedData ? (
           <>
-            {this.state.completedQuestions.map((q, i) => {
+            <Text> Questionnaire completed at: {this.state.completedData.timestamp}</Text>
+            <Text> Temperature: {this.state.completedData.weather.temperature} °F</Text>
+            <Text> Weather: {this.state.completedData.weather.description}</Text>
+            <Text> Location: {this.state.completedData.weather.city}, {this.state.completedData.weather.country}</Text>
+            {this.state.completedData.questions.map((q, indexQ) => {
               return (
                 <Text
                   key={q.question + '-' + q.selected}
                   style={{marginBottom: 5}}>
-                  {i + 1 + '. '}
+                  {indexQ + 1 + '. '}
                   {q.question} : {q.selected}
                 </Text>
               );
