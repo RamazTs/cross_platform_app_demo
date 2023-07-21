@@ -7,16 +7,24 @@ import {
   Keyboard,
 } from 'react-native';
 const History = props => {
-  const {history} = props;
+  const [history, setHistory] = useState([]);
+
+  useEffect(() => {
+    loadDataFromAsyncStorage();
+  }, []);
+
+  const loadDataFromAsyncStorage = async () => {
+    let history = await AsyncStorage.getItem('questionnaireHistory');
+    if (history) {
+      setHistory(JSON.parse(history));
+    }
+  };
+
   return (
       <View style={styles.container}>
         {history.length > 0 ? (
           history.map((histArray, i) => {
             return <>
-              {/* <Text key={histArray.timestamp}> Questionaire completed at: {histArray.timestamp}</Text>
-              <Text> Temperature: {histArray.weather.temperature} °F</Text>
-              <Text> Weather: {histArray.weather.description}</Text>
-              <Text> Location: {histArray.weather.city}, {histArray.weather.country}</Text> */}
             {histArray.completedQuestions.map((q, indexQ) => {  
               return <Text style={styles.row}
               key={histArray.timestamp + q.question + q.selected}

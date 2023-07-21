@@ -14,7 +14,6 @@ const Tab = createBottomTabNavigator();
 
 function App() {
   const scheme = useColorScheme();
-  const [history, setHistory] = useState([]);
   return (
     <NavigationContainer theme={scheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Tab.Navigator>
@@ -22,7 +21,7 @@ function App() {
           name="History"
           children={() => <History history={[]} />}
         />
-        <Tab.Screen name="Questionnaire" children={() => <Questionnaire setHistory={setHistory}/>} />
+        <Tab.Screen name="Questionnaire" children={() => <Questionnaire />} />
       </Tab.Navigator>
     </NavigationContainer>
   );

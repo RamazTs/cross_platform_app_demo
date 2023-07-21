@@ -57,22 +57,23 @@ class Questionnaire extends Component {
     };
   };
 
-  loadDataFromAsyncStorage = async () => {
-    let history = await AsyncStorage.getItem('questionnaireHistory');
-  if (history === null) {
-    history = [];
-    await AsyncStorage.setItem('questionnaireHistory', JSON.stringify(history));
-  }
-  this.props.setHistory(JSON.parse(history));
+  saveDataToAsyncStorage = async () => {
+    if (this.state.completedData) {
+      const history = await AsyncStorage.getItem('questionnaireHistory');
+      const newHistory = history ? JSON.parse(history) : [];
+      newHistory.push(this.state.completedData);
+      await AsyncStorage.setItem('questionnaireHistory', JSON.stringify(newHistory));
+    } else {
+      console.log("No completed questionnaire data to save");
+    }
   };
 
-  saveDataToAsyncStorage = async () => {
-    const history = await AsyncStorage.getItem('questionnaireHistory');
-    const newHistory = history ? JSON.parse(history) : [];
-    newHistory.push(this.state.completedData);
-    await AsyncStorage.setItem('questionnaireHistory', JSON.stringify(newHistory));
-    this.loadDataFromAsyncStorage();
-  };
+  // saveDataToAsyncStorage = async () => {
+  //   const history = await AsyncStorage.getItem('questionnaireHistory');
+  //   const newHistory = history ? JSON.parse(history) : [];
+  //   newHistory.push(this.state.completedData);
+  //   await AsyncStorage.setItem('questionnaireHistory', JSON.stringify(newHistory));
+  // };
 
   
 
@@ -125,6 +126,11 @@ updateIndex = async () => {
     );
 
     // Store completed questionnaire and location/weather data in the state
+    const completedData = {
+      questions: this.state.completedQuestions,
+      timestamp: new Date().toLocaleString(),
+      weather: weatherData,
+    };
     this.setState({
       isEnded: true,
       question_obj: this.state.QUESTIONS[0],
