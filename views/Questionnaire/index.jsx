@@ -57,6 +57,23 @@ class Questionnaire extends Component {
     };
   };
 
+  loadDataFromAsyncStorage = async () => {
+    let history = await AsyncStorage.getItem('questionnaireHistory');
+  if (history === null) {
+    history = [];
+    await AsyncStorage.setItem('questionnaireHistory', JSON.stringify(history));
+  }
+  this.props.setHistory(JSON.parse(history));
+  };
+
+  saveDataToAsyncStorage = async () => {
+    const history = await AsyncStorage.getItem('questionnaireHistory');
+    const newHistory = history ? JSON.parse(history) : [];
+    newHistory.push(this.state.completedData);
+    await AsyncStorage.setItem('questionnaireHistory', JSON.stringify(newHistory));
+    this.loadDataFromAsyncStorage();
+  };
+
   
 
   getGeoLocation = () => {
@@ -313,6 +330,13 @@ updateIndex = async () => {
               style={{...this.styles.start, marginTop: 20}}>
               <Text style={{color: 'white', fontWeight: 'bold'}}>
                 Restart Questionnaire
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => { this.saveDataToAsyncStorage(); this.viewStoredData();} }
+              style={{...this.styles.start, marginTop: 20}}>
+              <Text style={{color: 'white', fontWeight: 'bold'}}>
+                Save Data
               </Text>
             </TouchableOpacity>
           </>

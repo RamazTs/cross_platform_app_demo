@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -13,11 +13,11 @@ const History = props => {
         {history.length > 0 ? (
           history.map((histArray, i) => {
             return <>
-              <Text key={histArray.timestamp}> Questionaire completed at: {histArray.timestamp}</Text>
+              {/* <Text key={histArray.timestamp}> Questionaire completed at: {histArray.timestamp}</Text>
               <Text> Temperature: {histArray.weather.temperature} °F</Text>
               <Text> Weather: {histArray.weather.description}</Text>
-              <Text> Location: {histArray.weather.city}, {histArray.weather.country}</Text>
-            {histArray.completedQuestions.map((q, indexQ) => {
+              <Text> Location: {histArray.weather.city}, {histArray.weather.country}</Text> */}
+            {histArray.completedQuestions.map((q, indexQ) => {  
               return <Text style={styles.row}
               key={histArray.timestamp + q.question + q.selected}
                  >
