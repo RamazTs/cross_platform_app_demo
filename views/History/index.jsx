@@ -6,6 +6,7 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 const History = props => {
   const [history, setHistory] = useState([]);
 
@@ -14,31 +15,39 @@ const History = props => {
   }, []);
 
   const loadDataFromAsyncStorage = async () => {
-    let history = await AsyncStorage.getItem('questionnaireHistory');
-    if (history) {
-      setHistory(JSON.parse(history));
+    try {
+      let history = await AsyncStorage.getItem('questionnaireHistory');
+      if (history) {
+        setHistory(JSON.parse(history));
+      }
+    } catch (exception) {
+      console.log(exception);
     }
   };
 
   return (
-      <View style={styles.container}>
-        {history.length > 0 ? (
-          history.map((histArray, i) => {
-            return <>
-            {histArray.completedQuestions.map((q, indexQ) => {  
-              return <Text style={styles.row}
-              key={histArray.timestamp + q.question + q.selected}
-                 >
-              {indexQ + 1 + '. '}
-                  {q.question} : {q.selected}
-            </Text>
-            })}
+    <View style={styles.container}>
+      {/* {history.length > 0 ? (
+        history.map((histArray, i) => {
+          return (
+            <>
+              {histArray.completedQuestions.map((q, indexQ) => {
+                return (
+                  <Text
+                    style={styles.row}
+                    key={histArray.timestamp + q.question + q.selected}>
+                    {indexQ + 1 + '. '}
+                    {q.question} : {q.selected}
+                  </Text>
+                );
+              })}
             </>
+          );
         })
-        ) : (
-          <Text>History Empty</Text>
-        )}
-      </View>
+      ) : (
+        <Text>History Empty</Text>
+      )} */}
+    </View>
   );
 };
 
