@@ -6,6 +6,8 @@ import {
   StyleSheet,
   TouchableWithoutFeedback,
   Keyboard,
+  Alert,
+  Button,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 const History = props => {
@@ -25,6 +27,30 @@ const History = props => {
     } catch (exception) {
       console.log(exception);
     }
+  };
+
+  const clearDataFromAsyncStorage = async () => {
+    Alert.alert(
+      "Clear Data Confirmation",
+      "Are you sure you want to permanently delete all questionnaire history?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel"
+        },
+        { 
+          text: "OK", 
+          onPress: async () => {
+            try {
+              await AsyncStorage.removeItem('questionnaireHistory');
+              setHistory([]);
+            } catch (exception) {
+              console.log(exception);
+            }
+          }
+        }
+      ]
+    );
   };
 
   return (
@@ -53,35 +79,11 @@ const History = props => {
       ) : (
         <Text>History Empty</Text>
       )}
+      <Button title="Clear Data" onPress={clearDataFromAsyncStorage} />
       </ScrollView>
   );
       };
 
-//   return (
-//     <View style={styles.container}>
-//       {history.length > 0 ? (
-//         history.map((histArray, i) => {
-//           return (
-//             <>
-//               {histArray.questions.map((q, indexQ) => {
-//                 return (
-//                   <Text
-//                     style={styles.row}
-//                     key={histArray.timestamp + q.question + q.selected}>
-//                     {indexQ + 1 + '. '}
-//                     {q.question} : {q.selected}
-//                   </Text>
-//                 );
-//               })}
-//             </>
-//           );
-//         })
-//       ) : (
-//         <Text>History Empty</Text>
-//       )}
-//     </View>
-//   );
-// };
 
 const styles = StyleSheet.create({
   container: {},
