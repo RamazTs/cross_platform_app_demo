@@ -16,9 +16,10 @@ const History = props => {
 
   const loadDataFromAsyncStorage = async () => {
     try {
-      let history = await AsyncStorage.getItem('questionnaireHistory');
-      if (history) {
-        setHistory(JSON.parse(history));
+      let historyJson = await AsyncStorage.getItem('questionnaireHistory');
+      if (historyJson) {
+        console.log(JSON.parse(historyJson));
+        setHistory(JSON.parse(historyJson));
       }
     } catch (exception) {
       console.log(exception);
@@ -27,11 +28,11 @@ const History = props => {
 
   return (
     <View style={styles.container}>
-      {/* {history.length > 0 ? (
+      {history.length > 0 ? (
         history.map((histArray, i) => {
           return (
             <>
-              {histArray.completedQuestions.map((q, indexQ) => {
+              {histArray.questions.map((q, indexQ) => {
                 return (
                   <Text
                     style={styles.row}
@@ -46,7 +47,7 @@ const History = props => {
         })
       ) : (
         <Text>History Empty</Text>
-      )} */}
+      )}
     </View>
   );
 };
