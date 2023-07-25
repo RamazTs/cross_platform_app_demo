@@ -1,4 +1,5 @@
 import React, {useEffect, useState} from 'react';
+import { ScrollView } from 'react-native';
 import {
   View,
   Text,
@@ -27,30 +28,60 @@ const History = props => {
   };
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       {history.length > 0 ? (
-        history.map((histArray, i) => {
+        history.slice(0).reverse().map((histData, i) => {
           return (
-            <>
-              {histArray.questions.map((q, indexQ) => {
+            <View key={i}>
+              <Text>Questionnaire completed at: {histData.timestamp}</Text>
+              <Text>Temperature: {histData.weather.temperature} °F</Text>
+              <Text>Weather: {histData.weather.description}</Text>
+              <Text>Location: {histData.weather.city}, {histData.weather.country}</Text>
+              {histData.questions.map((q, indexQ) => {
                 return (
                   <Text
-                    style={styles.row}
-                    key={histArray.timestamp + q.question + q.selected}>
+                    key={indexQ}
+                    style={styles.row}>
                     {indexQ + 1 + '. '}
                     {q.question} : {q.selected}
                   </Text>
                 );
               })}
-            </>
+            </View>
           );
         })
       ) : (
         <Text>History Empty</Text>
       )}
-    </View>
+      </ScrollView>
   );
-};
+      };
+
+//   return (
+//     <View style={styles.container}>
+//       {history.length > 0 ? (
+//         history.map((histArray, i) => {
+//           return (
+//             <>
+//               {histArray.questions.map((q, indexQ) => {
+//                 return (
+//                   <Text
+//                     style={styles.row}
+//                     key={histArray.timestamp + q.question + q.selected}>
+//                     {indexQ + 1 + '. '}
+//                     {q.question} : {q.selected}
+//                   </Text>
+//                 );
+//               })}
+//             </>
+//           );
+//         })
+//       ) : (
+//         <Text>History Empty</Text>
+//       )}
+//     </View>
+//   );
+// };
 
 const styles = StyleSheet.create({
   container: {},
