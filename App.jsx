@@ -17,6 +17,10 @@ function App() {
   return (
     <NavigationContainer theme={scheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Tab.Navigator>
+      <Tab.Screen
+          name="Home"
+          component={Home}
+        />
         <Tab.Screen
           name="History"
           children={() => <History history={[]} />}
