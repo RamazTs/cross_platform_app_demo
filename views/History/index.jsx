@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useCallback} from 'react';
 import { ScrollView } from 'react-native';
 import {
   View,
@@ -10,12 +10,19 @@ import {
   Button,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect } from '@react-navigation/native';
 const History = props => {
   const [history, setHistory] = useState([]);
 
-  useEffect(() => {
-    loadDataFromAsyncStorage();
-  }, []);
+  // useEffect(() => {d
+  //   loadDataFromAsyncStorage();
+  // }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadDataFromAsyncStorage();
+    }, [])
+  );
 
   const loadDataFromAsyncStorage = async () => {
     try {
