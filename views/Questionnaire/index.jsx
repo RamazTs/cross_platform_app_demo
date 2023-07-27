@@ -1,4 +1,4 @@
-import {View, Text, Button, TouchableOpacity, Platform} from 'react-native';
+import {View, Text, Button, TouchableOpacity, Platform, Alert} from 'react-native';
 import {Component} from 'react';
 import Question from '../../components/Question/Question.jsx';
 import QuestionService from '../../services/QuestionService.js';
@@ -62,11 +62,34 @@ class Questionnaire extends Component {
       const history = await AsyncStorage.getItem('questionnaireHistory');
       const newHistory = history ? JSON.parse(history) : [];
       newHistory.push(this.state.completedData);
+      if (newHistory.length > 3) { // Check for more than 3 saved questionnaires
+        Alert.alert(
+            "File Limit Reached",
+            "You have reached the limit of stored questionnaires. If you save this data, the oldest questionnaire will be replaced."
+        );
+        newHistory.shift(); // Remove the oldest questionnaire from the start
+      }
+  
       await AsyncStorage.setItem('questionnaireHistory', JSON.stringify(newHistory));
     } else {
       console.log("No completed questionnaire data to save");
     }
   };
+//       if (newHistory.length >= 3) { // Check for 3 or more saved questionnaires
+//         Alert.alert(
+//             "File Limit Reached",
+//             "You have reached the limit of stored questionnaires. Please clear some data."
+//         );
+//     } else {
+//         await AsyncStorage.setItem('questionnaireHistory', JSON.stringify(newHistory));
+//     }
+// };
+//   }
+  //     await AsyncStorage.setItem('questionnaireHistory', JSON.stringify(newHistory));
+  //   } else {
+  //     console.log("No completed questionnaire data to save");
+  //   }
+  // };
 
   // saveDataToAsyncStorage = async () => {
   //   const history = await AsyncStorage.getItem('questionnaireHistory');
