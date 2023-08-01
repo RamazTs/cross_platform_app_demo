@@ -88,48 +88,6 @@ class Questionnaire extends Component {
     }
   };
 
-  //     if (newHistory.length > 3) { // Check for more than 3 saved questionnaires
-  //       Alert.alert(
-  //           "File Limit Reached",
-  //           "You have reached the limit of stored questionnaires. If you save this data, the oldest questionnaire will be replaced."
-  //       );
-  //       newHistory.shift(); // Remove the oldest questionnaire from the start
-  //     }
-  
-  //     await AsyncStorage.setItem('questionnaireHistory', JSON.stringify(newHistory));
-  //   } else {
-  //     console.log("No completed questionnaire data to save");
-  //   }
-  // };
-
-
-
-
-//       if (newHistory.length >= 3) { // Check for 3 or more saved questionnaires
-//         Alert.alert(
-//             "File Limit Reached",
-//             "You have reached the limit of stored questionnaires. Please clear some data."
-//         );
-//     } else {
-//         await AsyncStorage.setItem('questionnaireHistory', JSON.stringify(newHistory));
-//     }
-// };
-//   }
-  //     await AsyncStorage.setItem('questionnaireHistory', JSON.stringify(newHistory));
-  //   } else {
-  //     console.log("No completed questionnaire data to save");
-  //   }
-  // };
-
-  // saveDataToAsyncStorage = async () => {
-  //   const history = await AsyncStorage.getItem('questionnaireHistory');
-  //   const newHistory = history ? JSON.parse(history) : [];
-  //   newHistory.push(this.state.completedData);
-  //   await AsyncStorage.setItem('questionnaireHistory', JSON.stringify(newHistory));
-  // };
-
-  
-
   getGeoLocation = () => {
     return new Promise((resolve, reject) => {
       Geolocation.getCurrentPosition((info, error) => {

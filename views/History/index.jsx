@@ -13,11 +13,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 const History = props => {
   const [history, setHistory] = useState([]);
-
-  // useEffect(() => {d
-  //   loadDataFromAsyncStorage();
-  // }, []);
-
+  
   useFocusEffect(
     useCallback(() => {
       loadDataFromAsyncStorage();
