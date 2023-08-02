@@ -143,6 +143,7 @@ class Questionnaire extends Component {
           geoLocation.coords.longitude,
         );
       } catch (error) {
+        // TODO: HANDLE ERROR
         console.log(error);
       }
       // Store completed questionnaire and location/weather data in the state
