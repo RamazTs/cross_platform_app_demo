@@ -43,19 +43,10 @@ class Questionnaire extends Component {
   }
 
   getWeather = async (lat, lon) => {
-    const response = await fetch(
-      `http://api.openweathermap.org/geo/1.0/reverse?lat=${lat}&lon=${lon}&limit=1&appid=0bb2954984e58b4696605e92623b8626`,
-    );
-    if (!response.ok) {
-      throw new Error('OpenWeather API request failed');
-    }
-    const locationData = await response.json();
-
     const weatherResponse = await fetch(
       `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=0bb2954984e58b4696605e92623b8626`,
     );
     const weatherData = await weatherResponse.json();
-
     return {
       city: weatherData.name,
       country: weatherData.sys.country,
@@ -144,12 +135,16 @@ class Questionnaire extends Component {
     await Tts.stop();
     const newIndex = this.state.questionIndex + 1;
     if (newIndex === this.state.QUESTIONS.length) {
-      const geoLocation = await this.getGeoLocation();
-      const weatherData = await this.getWeather(
-        geoLocation.coords.latitude,
-        geoLocation.coords.longitude,
-      );
-
+      let geoLocation, weatherData;
+      try {
+        geoLocation = await this.getGeoLocation();
+        weatherData = await this.getWeather(
+          geoLocation.coords.latitude,
+          geoLocation.coords.longitude,
+        );
+      } catch (error) {
+        console.log(error);
+      }
       // Store completed questionnaire and location/weather data in the state
       const completedData = {
         questions: this.state.completedQuestions,
