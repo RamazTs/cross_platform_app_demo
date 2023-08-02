@@ -1,4 +1,11 @@
-import {View, Text, Button, TouchableOpacity, Platform, Alert} from 'react-native';
+import {
+  View,
+  Text,
+  Button,
+  TouchableOpacity,
+  Platform,
+  Alert,
+} from 'react-native';
 import {Component} from 'react';
 import Question from '../../components/Question/Question.jsx';
 import QuestionService from '../../services/QuestionService.js';
@@ -37,7 +44,7 @@ class Questionnaire extends Component {
 
   getWeather = async (lat, lon) => {
     const response = await fetch(
-        `http://api.openweathermap.org/geo/1.0/reverse?lat=${lat}&lon=${lon}&limit=1&appid=0bb2954984e58b4696605e92623b8626`,
+      `http://api.openweathermap.org/geo/1.0/reverse?lat=${lat}&lon=${lon}&limit=1&appid=0bb2954984e58b4696605e92623b8626`,
     );
     if (!response.ok) {
       throw new Error('OpenWeather API request failed');
@@ -45,14 +52,14 @@ class Questionnaire extends Component {
     const locationData = await response.json();
 
     const weatherResponse = await fetch(
-        `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=0bb2954984e58b4696605e92623b8626`
+      `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=0bb2954984e58b4696605e92623b8626`,
     );
     const weatherData = await weatherResponse.json();
 
     return {
       city: weatherData.name,
       country: weatherData.sys.country,
-      temperature: ((weatherData.main.temp - 273.15) * 9/5 + 32).toFixed(2), 
+      temperature: (((weatherData.main.temp - 273.15) * 9) / 5 + 32).toFixed(2),
       description: weatherData.weather[0].description,
     };
   };
@@ -62,29 +69,36 @@ class Questionnaire extends Component {
       const history = await AsyncStorage.getItem('questionnaireHistory');
       const newHistory = history ? JSON.parse(history) : [];
       newHistory.push(this.state.completedData);
-      if (newHistory.length > 3) { // Check for more than 3 saved questionnaires
+      if (newHistory.length > 3) {
+        // Check for more than 3 saved questionnaires
         Alert.alert(
-          "File Limit Reached",
-          "You have reached the limit of stored questionnaires. If you save this data, the oldest questionnaire will be replaced.",
+          'File Limit Reached',
+          'You have reached the limit of stored questionnaires. If you save this data, the oldest questionnaire will be replaced.',
           [
             {
-              text: "Cancel",
-              style: "cancel"
+              text: 'Cancel',
+              style: 'cancel',
             },
             {
-              text: "OK",
+              text: 'OK',
               onPress: async () => {
                 newHistory.shift(); // Remove the oldest questionnaire from the start
-                await AsyncStorage.setItem('questionnaireHistory', JSON.stringify(newHistory));
-              }
-            }
+                await AsyncStorage.setItem(
+                  'questionnaireHistory',
+                  JSON.stringify(newHistory),
+                );
+              },
+            },
           ],
         );
       } else {
-        await AsyncStorage.setItem('questionnaireHistory', JSON.stringify(newHistory));
+        await AsyncStorage.setItem(
+          'questionnaireHistory',
+          JSON.stringify(newHistory),
+        );
       }
     } else {
-      console.log("No completed questionnaire data to save");
+      console.log('No completed questionnaire data to save');
     }
   };
 
@@ -126,48 +140,48 @@ class Questionnaire extends Component {
     Tts.speak(text + ans);
   };
 
-updateIndex = async () => {
-  await Tts.stop();
-  const newIndex = this.state.questionIndex + 1;
-  if (newIndex === this.state.QUESTIONS.length) {
-    const geoLocation = await this.getGeoLocation();
-    const weatherData = await this.getWeather(
-      geoLocation.coords.latitude,
-      geoLocation.coords.longitude,
-    );
+  updateIndex = async () => {
+    await Tts.stop();
+    const newIndex = this.state.questionIndex + 1;
+    if (newIndex === this.state.QUESTIONS.length) {
+      const geoLocation = await this.getGeoLocation();
+      const weatherData = await this.getWeather(
+        geoLocation.coords.latitude,
+        geoLocation.coords.longitude,
+      );
 
-    // Store completed questionnaire and location/weather data in the state
-    const completedData = {
-      questions: this.state.completedQuestions,
-      timestamp: new Date().toLocaleString(),
-      weather: weatherData,
-    };
-    this.setState({
-      isEnded: true,
-      question_obj: this.state.QUESTIONS[0],
-      questionIndex: 0,
-      completedData: {
+      // Store completed questionnaire and location/weather data in the state
+      const completedData = {
         questions: this.state.completedQuestions,
         timestamp: new Date().toLocaleString(),
         weather: weatherData,
-      },
-    });
-    return;
-  }
+      };
+      this.setState({
+        isEnded: true,
+        question_obj: this.state.QUESTIONS[0],
+        questionIndex: 0,
+        completedData: {
+          questions: this.state.completedQuestions,
+          timestamp: new Date().toLocaleString(),
+          weather: weatherData,
+        },
+      });
+      return;
+    }
 
-  this.setState(
-    {
-      questionIndex: newIndex,
-      question_obj: this.state.QUESTIONS[newIndex],
-    },
-    this.readQuestion.bind(this),
-  );
-};
+    this.setState(
+      {
+        questionIndex: newIndex,
+        question_obj: this.state.QUESTIONS[newIndex],
+      },
+      this.readQuestion.bind(this),
+    );
+  };
 
   viewStoredData = async () => {
     const history = await AsyncStorage.getItem('questionnaireHistory');
     console.log(JSON.parse(history));
-}
+  };
 
   selectAnswerHandler = async (question, answers, selected) => {
     await this.stopRecording();
@@ -186,6 +200,7 @@ updateIndex = async () => {
     if (this.found_2 || this.state.ignoreVoiceResults) return;
     const {question, answers} = this.state.question_obj;
     const text = e.value[0];
+    if (!text) return;
     const words = text.split(' ');
     const number = words[words.length - 1].toLowerCase();
     if (
@@ -328,10 +343,23 @@ updateIndex = async () => {
           </TouchableOpacity>
         ) : this.state.isEnded && this.state.completedData ? (
           <>
-            <Text> Questionnaire completed at: {this.state.completedData.timestamp}</Text>
-            <Text> Temperature: {this.state.completedData.weather.temperature} °F</Text>
-            <Text> Weather: {this.state.completedData.weather.description}</Text>
-            <Text> Location: {this.state.completedData.weather.city}, {this.state.completedData.weather.country}</Text>
+            <Text>
+              {' '}
+              Questionnaire completed at: {this.state.completedData.timestamp}
+            </Text>
+            <Text>
+              {' '}
+              Temperature: {this.state.completedData.weather.temperature} °F
+            </Text>
+            <Text>
+              {' '}
+              Weather: {this.state.completedData.weather.description}
+            </Text>
+            <Text>
+              {' '}
+              Location: {this.state.completedData.weather.city},{' '}
+              {this.state.completedData.weather.country}
+            </Text>
             {this.state.completedData.questions.map((q, indexQ) => {
               return (
                 <Text
@@ -350,7 +378,10 @@ updateIndex = async () => {
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
-              onPress={() => { this.saveDataToAsyncStorage(); this.viewStoredData();} }
+              onPress={() => {
+                this.saveDataToAsyncStorage();
+                this.viewStoredData();
+              }}
               style={{...this.styles.start, marginTop: 20}}>
               <Text style={{color: 'white', fontWeight: 'bold'}}>
                 Save Data
