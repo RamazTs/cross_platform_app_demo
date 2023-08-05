@@ -9,6 +9,7 @@ import {NavigationContainer} from '@react-navigation/native';
 import Home from './views/Home';
 import History from './views/History';
 import Questionnaire from './views/Questionnaire/index';
+import HistoryStackNavigator from './views/HistoryStackNavigator';
 
 const Tab = createBottomTabNavigator();
 
@@ -21,10 +22,11 @@ function App() {
           name="Home"
           component={Home}
         />
-        <Tab.Screen
+        <Tab.Screen name="History" component={HistoryStackNavigator} options={{headerShown: false}} />
+        {/* <Tab.Screen
           name="History"
           children={() => <History history={[]} />}
-        />
+        /> */}
         <Tab.Screen name="Questionnaire" children={() => <Questionnaire />} />
       </Tab.Navigator>
     </NavigationContainer>

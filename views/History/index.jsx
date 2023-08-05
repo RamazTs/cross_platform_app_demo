@@ -1,5 +1,6 @@
 import React, {useEffect, useState, useCallback} from 'react';
-import { ScrollView } from 'react-native';
+import { ScrollView, TouchableOpacity } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import {
   View,
   Text,
@@ -11,9 +12,11 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
+
 const History = props => {
   const [history, setHistory] = useState([]);
-  
+  const navigation = useNavigation();
+
   useFocusEffect(
     useCallback(() => {
       loadDataFromAsyncStorage();
@@ -59,33 +62,22 @@ const History = props => {
   return (
     <ScrollView style={styles.container}>
       {history.length > 0 ? (
-        history.slice(0).reverse().map((histData, i) => {
-          return (
-            <View key={i}>
-              <Text>Questionnaire completed at: {histData.timestamp}</Text>
-              <Text>Temperature: {histData.weather.temperature} °F</Text>
-              <Text>Weather: {histData.weather.description}</Text>
-              <Text>Location: {histData.weather.city}, {histData.weather.country}</Text>
-              {histData.questions.map((q, indexQ) => {
-                return (
-                  <Text
-                    key={indexQ}
-                    style={styles.row}>
-                    {indexQ + 1 + '. '}
-                    {q.question} : {q.selected}
-                  </Text>
-                );
-              })}
-            </View>
-          );
-        })
+        history.slice(0).reverse().map((histData, i) => (
+          <TouchableOpacity 
+            key={i} 
+            style={styles.recordItem} 
+            onPress={() => navigation.navigate('RecordDetails', { recordData: histData })}
+          >
+            <Text style={styles.recordText}>Record {history.length - i} ({histData.timestamp})</Text>
+          </TouchableOpacity>
+        ))
       ) : (
         <Text>History Empty</Text>
       )}
       <Button title="Clear Data" onPress={clearDataFromAsyncStorage} />
-      </ScrollView>
+    </ScrollView>
   );
-      };
+};
 
 
 const styles = StyleSheet.create({
@@ -93,6 +85,17 @@ const styles = StyleSheet.create({
   row: {
     padding: 5,
     margin: 3,
+  },
+  recordItem: {
+    padding: 7,  
+    backgroundColor: '#d3d3d3',
+    margin: 6,   
+    borderWidth: 1, 
+    borderRadius: 5, 
+    borderColor: '#000'
+  },
+  recordText: {
+    fontSize: 16,  
   },
 });
 
