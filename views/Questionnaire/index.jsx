@@ -332,7 +332,8 @@ class Questionnaire extends Component {
         {!this.state.isStarted ? (
           <TouchableOpacity
             onPress={this.startQuestionnaireHandler}
-            style={this.styles.start}>
+            style={this.styles.start}
+            accessibilityLabel='start'>
             <Text style={{color: 'white', fontWeight: 'bold'}}>
               Start The Questionnaire
             </Text>

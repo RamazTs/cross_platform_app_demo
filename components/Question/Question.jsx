@@ -28,6 +28,7 @@ class Question extends Component {
                 );
                 this.props.updateIndex();
               }}
+              accessible={false}
             />
           );
         })}
