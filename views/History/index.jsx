@@ -66,6 +66,7 @@ const History = props => {
           <TouchableOpacity 
             key={i} 
             style={styles.recordItem} 
+            accessibilityLabel={`show me record ${history.length - i}`}
             onPress={() => navigation.navigate('RecordDetails', { recordData: histData })}
           >
             <Text style={styles.recordText}>Record {history.length - i} ({histData.timestamp})</Text>

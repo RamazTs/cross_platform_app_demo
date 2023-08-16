@@ -21,13 +21,25 @@ function App() {
       <Tab.Screen
           name="Home"
           component={Home}
+          options={{
+            tabBarButtonAccessibilityLabel: 'Home', // Listen for "Home"
+            tabBarAccessibilityLabel: 'Go to Home tab', // Listen for "Go to Home tab"
+          }}
         />
-        <Tab.Screen name="History" component={HistoryStackNavigator} options={{headerShown: false}} />
+        <Tab.Screen name="History" component={HistoryStackNavigator} options={{headerShown: false,
+            tabBarButtonAccessibilityLabel: 'History', // Listen for "History"
+            tabBarAccessibilityLabel: 'Go to History tab', // Listen for "Go to History tab"
+          }}
+           />
         {/* <Tab.Screen
           name="History"
           children={() => <History history={[]} />}
         /> */}
-        <Tab.Screen name="Questionnaire" children={() => <Questionnaire />} />
+        <Tab.Screen name="Questionnaire" children={() => <Questionnaire />}
+        options={{
+            tabBarButtonAccessibilityLabel: 'Questionnaire', // Listen for "Questionnaire"
+            tabBarAccessibilityLabel: 'Go to Questionnaire tab', // Listen for "Go to Questionnaire tab"
+          }} />
       </Tab.Navigator>
     </NavigationContainer>
   );

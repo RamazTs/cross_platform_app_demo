@@ -198,32 +198,84 @@ class Questionnaire extends Component {
     const text = e.value[0];
     if (!text) return;
     const words = text.split(' ');
-    const number = words[words.length - 1].toLowerCase();
-    if (
-      this.state.numbersInWords[number] &&
-      this.state.numbersInWords[number] <= answers.length
-    ) {
+    let numberOrWord = words[words.length - 1].toLowerCase();
+
+    // Check if it's a word and map it to the number
+    if (this.state.numbersInWords[numberOrWord]) {
+      numberOrWord = this.state.numbersInWords[numberOrWord];
+    } else {
+      numberOrWord = parseInt(numberOrWord, 10);
+    }
+
+    // Check if the recognized number or word corresponds to an answer
+    if (numberOrWord && numberOrWord <= answers.length) {
       this.found_2 = true;
       console.log('FOUND FOUND FOUND');
       await this.selectAnswerHandler(
         question,
         answers,
-        answers[this.state.numbersInWords[number] - 1],
+        answers[numberOrWord - 1],
       );
       await this.updateIndex();
       return;
-    } else {
-      for (const answ of answers) {
-        if (text.toLowerCase().includes(answ.toLowerCase())) {
-          this.found_2 = true;
-          console.log('FOUND FOUND FOUND');
-          await this.selectAnswerHandler(question, answers, answ);
-          await this.updateIndex();
-          return;
-        }
-      }
     }
-  };
+};
+
+//   speechResultsHandler = async e => {
+//     console.log(e);
+//     if (this.found_2 || this.state.ignoreVoiceResults) return;
+//     const {question, answers} = this.state.question_obj;
+//     const text = e.value[0];
+//     if (!text) return;
+//     const words = text.split(' ');
+//     const number = parseInt(words[words.length - 1], 10);
+
+//     if (number && number <= answers.length) {
+//       this.found_2 = true;
+//       console.log('FOUND FOUND FOUND');
+//       await this.selectAnswerHandler(
+//         question,
+//         answers,
+//         answers[number - 1],
+//       );
+//       await this.updateIndex();
+//       return;
+//     }
+// };
+
+  // speechResultsHandler = async e => {
+  //   console.log(e);
+  //   if (this.found_2 || this.state.ignoreVoiceResults) return;
+  //   const {question, answers} = this.state.question_obj;
+  //   const text = e.value[0];
+  //   if (!text) return;
+  //   const words = text.split(' ');
+  //   const number = words[words.length - 1].toLowerCase();
+  //   if (
+  //     this.state.numbersInWords[number] &&
+  //     this.state.numbersInWords[number] <= answers.length
+  //   ) {
+  //     this.found_2 = true;
+  //     console.log('FOUND FOUND FOUND');
+  //     await this.selectAnswerHandler(
+  //       question,
+  //       answers,
+  //       answers[this.state.numbersInWords[number] - 1],
+  //     );
+  //     await this.updateIndex();
+  //     return;
+  //   } else {
+  //     for (const answ of answers) {
+  //       if (text.toLowerCase().includes(answ.toLowerCase())) {
+  //         this.found_2 = true;
+  //         console.log('FOUND FOUND FOUND');
+  //         await this.selectAnswerHandler(question, answers, answ);
+  //         await this.updateIndex();
+  //         return;
+  //       }
+  //     }
+  //   }
+  // };
 
   startRecording = () => {
     return new Promise((resolve, reject) => {
@@ -369,6 +421,7 @@ class Questionnaire extends Component {
             })}
             <TouchableOpacity
               onPress={this.startQuestionnaireHandler}
+              accessibilityLabel='Restart'
               style={{...this.styles.start, marginTop: 20}}>
               <Text style={{color: 'white', fontWeight: 'bold'}}>
                 Restart Questionnaire
@@ -379,6 +432,7 @@ class Questionnaire extends Component {
                 this.saveDataToAsyncStorage();
                 this.viewStoredData();
               }}
+              accessibilityLabel='save'
               style={{...this.styles.start, marginTop: 20}}>
               <Text style={{color: 'white', fontWeight: 'bold'}}>
                 Save Data
