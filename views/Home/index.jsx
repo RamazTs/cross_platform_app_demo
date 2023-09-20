@@ -2,6 +2,7 @@ import React, {useState, useCallback} from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import {View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Alert} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import FitbitDataComponent from '../../components/FitbitDataComponent';
 
 const Home = () => {
   const [alertEnabled, setAlertEnabled] = useState(false);
@@ -26,6 +27,7 @@ const Home = () => {
     <View style={styles.container}>
       <SafeAreaView>
         <Text style={styles.welcomeText}>Welcome to the Questionnaire App</Text>
+        <FitbitDataComponent />
         <TouchableOpacity
           style={styles.alertButton}
           onPress={() => setAlertEnabled(!alertEnabled)}

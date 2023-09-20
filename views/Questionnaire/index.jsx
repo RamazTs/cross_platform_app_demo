@@ -221,62 +221,6 @@ class Questionnaire extends Component {
     }
 };
 
-//   speechResultsHandler = async e => {
-//     console.log(e);
-//     if (this.found_2 || this.state.ignoreVoiceResults) return;
-//     const {question, answers} = this.state.question_obj;
-//     const text = e.value[0];
-//     if (!text) return;
-//     const words = text.split(' ');
-//     const number = parseInt(words[words.length - 1], 10);
-
-//     if (number && number <= answers.length) {
-//       this.found_2 = true;
-//       console.log('FOUND FOUND FOUND');
-//       await this.selectAnswerHandler(
-//         question,
-//         answers,
-//         answers[number - 1],
-//       );
-//       await this.updateIndex();
-//       return;
-//     }
-// };
-
-  // speechResultsHandler = async e => {
-  //   console.log(e);
-  //   if (this.found_2 || this.state.ignoreVoiceResults) return;
-  //   const {question, answers} = this.state.question_obj;
-  //   const text = e.value[0];
-  //   if (!text) return;
-  //   const words = text.split(' ');
-  //   const number = words[words.length - 1].toLowerCase();
-  //   if (
-  //     this.state.numbersInWords[number] &&
-  //     this.state.numbersInWords[number] <= answers.length
-  //   ) {
-  //     this.found_2 = true;
-  //     console.log('FOUND FOUND FOUND');
-  //     await this.selectAnswerHandler(
-  //       question,
-  //       answers,
-  //       answers[this.state.numbersInWords[number] - 1],
-  //     );
-  //     await this.updateIndex();
-  //     return;
-  //   } else {
-  //     for (const answ of answers) {
-  //       if (text.toLowerCase().includes(answ.toLowerCase())) {
-  //         this.found_2 = true;
-  //         console.log('FOUND FOUND FOUND');
-  //         await this.selectAnswerHandler(question, answers, answ);
-  //         await this.updateIndex();
-  //         return;
-  //       }
-  //     }
-  //   }
-  // };
-
   startRecording = () => {
     return new Promise((resolve, reject) => {
       this.setState({ignoreVoiceResults: false}, () =>
