@@ -1,32 +1,34 @@
 import React, { useState } from 'react';
-import { Button, Alert } from 'react-native';
-import { authorize } from 'react-native-app-auth';
+import { Button, Alert, View } from 'react-native';
+import { authorize, refresh, revoke } from 'react-native-app-auth';
 
 const config = {
   clientId: '23RD74',
   clientSecret: '35dfb9bceab400061315f1168074db7e',
   redirectUrl: 'com.cross_platform_health_app://callback',
   issuer: 'https://www.fitbit.com',
-  scopes: ['profile'], // You can request the scopes you need
+  scopes: ['profile', 'activity', 'sleep'], 
   serviceConfiguration: {
     authorizationEndpoint: 'https://www.fitbit.com/oauth2/authorize',
     tokenEndpoint: 'https://api.fitbit.com/oauth2/token',
-  },
+    revocationEndpoint: 'https://api.fitbit.com/oauth2/revoke'
+  }
 };
 
 const FitbitDataComponent = () => {
-  const [accessToken, setAccessToken] = useState(null);
+  const [authState, setAuthState] = useState(null);
 
   const importFitbitData = async () => {
     try {
-      const authState = await authorize(config);
-      setAccessToken(authState.accessToken);
-      // Fetch Fitbit data here
+      const result = await authorize(config);
+      setAuthState(result);
+
       const response = await fetch('https://api.fitbit.com/1/user/-/profile.json', {
         headers: {
-          Authorization: `Bearer ${authState.accessToken}`
+          Authorization: `Bearer ${result.accessToken}`
         }
       });
+
       const data = await response.json();
       console.log(data);
 
@@ -35,15 +37,118 @@ const FitbitDataComponent = () => {
     }
   };
 
+  const handleRefresh = async () => {
+    try {
+      const result = await refresh(config, {
+        refreshToken: authState.refreshToken,
+      });
+      setAuthState(result);
+    } catch (error) {
+      Alert.alert('Error', 'There was an error during token refresh.');
+    }
+  };
+
+  const handleRevoke = async () => {
+    try {
+      await revoke(config, {
+        tokenToRevoke: authState.refreshToken,
+        includeBasicAuth: true
+      });
+      setAuthState(null);
+    } catch (error) {
+      Alert.alert('Error', 'There was an error revoking the token.');
+    }
+  };
+
   return (
-    <Button
-      title="Import Fitbit Data"
-      onPress={importFitbitData}
-    />
+    <View style={{ padding: 20 }}>
+      <Button
+        title="Import Fitbit Data"
+        onPress={importFitbitData}
+      />
+      {authState && (
+        <>
+          <Button
+            title="Refresh Token"
+            onPress={handleRefresh}
+            style={{ marginTop: 10 }}
+          />
+          <Button
+            title="Revoke Token"
+            onPress={handleRevoke}
+            style={{ marginTop: 10 }}
+          />
+        </>
+      )}
+    </View>
   );
 };
 
 export default FitbitDataComponent;
+
+
+
+// import React, { useState } from 'react';
+// import { Button, Alert } from 'react-native';
+// import { authorize } from 'react-native-app-auth';
+// import { Linking } from 'react-native';
+
+// const config = {
+//   clientId: '23RD74',
+//   clientSecret: '35dfb9bceab400061315f1168074db7e',
+//   redirectUrl: 'com.cross_platform_health_app://callback',
+//   scopes: ['profile'], // You can request the scopes you need
+//   serviceConfiguration: {
+//     authorizationEndpoint: 'https://www.fitbit.com/oauth2/authorize',
+//     tokenEndpoint: 'https://api.fitbit.com/oauth2/token',
+//     revocationEndpoint: 'https://api.fitbit.com/oauth2/revoke'
+//   },
+// };
+
+// const redirectUrl = encodeURIComponent('com.cross_platform_health_app://callback');
+
+// function constructAuthUrl(state, challenge) {
+//   return `https://www.fitbit.com/oauth2/authorize?response_type=code&client_id=${clientId}&scope=activity+cardio_fitness+electrocardiogram+heartrate+location+nutrition+oxygen_saturation+profile+respiratory_rate+settings+sleep+social+temperature+weight&code_challenge=${challenge}&code_challenge_method=S256&state=${state}&redirect_uri=${redirectUrl}`;
+// }
+
+// const handleAuth = () => {
+//   let state = generateState();
+//   let { challenge } = generateCodeChallenge();
+
+//   const url = constructAuthUrl(state, challenge);
+//   Linking.openURL(url);
+
+// const FitbitDataComponent = () => {
+//   const [accessToken, setAccessToken] = useState(null);
+
+//   const importFitbitData = async () => {
+//     try {
+//       const authState = await authorize(config);
+//       setAccessToken(authState.accessToken);
+//       // Fetch Fitbit data here
+//       const response = await fetch('https://api.fitbit.com/1/user/-/profile.json', {
+//         headers: {
+//           Authorization: `Bearer ${authState.accessToken}`
+//         }
+//       });
+//       const data = await response.json();
+//       console.log(data);
+
+//     } catch (error) {
+//       Alert.alert('Error', 'There was an error during authentication.');
+//     }
+//   };
+// }
+
+//   return (
+//     <Button
+//       title="Import Fitbit Data"
+//       onPress={importFitbitData}
+//     />
+//   );
+// };
+
+// export default FitbitDataComponent;
 
 
 
