@@ -1,132 +1,181 @@
-import { Component } from 'react';
-import { Linking, TouchableOpacity, Text, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { Button, Alert } from 'react-native';
+import { authorize } from 'react-native-app-auth';
 
-const CLIENT_ID = "23RD74";
-const CLIENT_SECRET = "35dfb9bceab400061315f1168074db7e";
-const REDIRECT_URI = "cross_platform_app_demo://callback";
-const AUTH_URL = `https://www.fitbit.com/oauth2/authorize?response_type=code&client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&scope=heartrate+activity+nutrition+profile+sleep`;
+const config = {
+  clientId: '23RD74',
+  clientSecret: '35dfb9bceab400061315f1168074db7e',
+  redirectUrl: 'com.cross_platform_health_app://callback',
+  issuer: 'https://www.fitbit.com',
+  scopes: ['profile'], // You can request the scopes you need
+  serviceConfiguration: {
+    authorizationEndpoint: 'https://www.fitbit.com/oauth2/authorize',
+    tokenEndpoint: 'https://api.fitbit.com/oauth2/token',
+  },
+};
 
-class FitbitDataComponent extends Component {
-    state = {
-        accessToken: null,
-        refreshToken: null
-    };
+const FitbitDataComponent = () => {
+  const [accessToken, setAccessToken] = useState(null);
 
-    handleOpenURL = (event) => {
-        let code = /code=([^&]*)/.exec(event.url);
-        if (code && code[1]) {
-            this.exchangeCodeForToken(code[1]);
-        } else {
-            console.error("Authorization code not found in the callback URL:", event.url);
+  const importFitbitData = async () => {
+    try {
+      const authState = await authorize(config);
+      setAccessToken(authState.accessToken);
+      // Fetch Fitbit data here
+      const response = await fetch('https://api.fitbit.com/1/user/-/profile.json', {
+        headers: {
+          Authorization: `Bearer ${authState.accessToken}`
         }
-    };
+      });
+      const data = await response.json();
+      console.log(data);
 
-    exchangeCodeForToken = (code) => {
-        let auth = btoa(`${CLIENT_ID}:${CLIENT_SECRET}`);
-        fetch('https://api.fitbit.com/oauth2/token', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Basic ${auth}`,
-                'Content-Type': 'application/x-www-form-urlencoded'
-            },
-            body: `client_id=${CLIENT_ID}&grant_type=authorization_code&redirect_uri=${REDIRECT_URI}&code=${code}`
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.access_token && data.refresh_token) {
-                this.setState({
-                    accessToken: data.access_token,
-                    refreshToken: data.refresh_token
-                });
-            } else {
-                console.error("Failed to fetch access and refresh tokens:", data);
-            }
-        })
-        .catch(error => {
-            console.error('Error fetching Fitbit tokens:', error);
-        });
-    };
-
-    componentDidMount() {
-        Linking.addListener('url', this.handleOpenURL);
+    } catch (error) {
+      Alert.alert('Error', 'There was an error during authentication.');
     }
+  };
 
-    componentWillUnmount() {
-        Linking.removeListener('url', this.handleOpenURL);
-    }
-
-    startAuth = () => {
-        Linking.openURL(AUTH_URL);
-    };
-
-    fetchFitbitData = () => {
-        if (!this.state.accessToken) return;
-        fetch('https://api.fitbit.com/1/user/-/profile.json', {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${this.state.accessToken}`
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log(data);
-        })
-        .catch(error => {
-            if (error.message.includes('401')) {
-                // Handle token expiration
-                this.refreshAccessToken();
-            } else {
-                console.error('Error fetching Fitbit data:', error);
-            }
-        });
-    };
-
-    refreshAccessToken = () => {
-        let auth = btoa(`${CLIENT_ID}:${CLIENT_SECRET}`);
-        fetch('https://api.fitbit.com/oauth2/token', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Basic ${auth}`,
-                'Content-Type': 'application/x-www-form-urlencoded'
-            },
-            body: `grant_type=refresh_token&refresh_token=${this.state.refreshToken}`
-        })
-        .then(response => response.json())
-        .then(data => {
-            this.setState({
-                accessToken: data.access_token,
-                refreshToken: data.refresh_token
-            });
-            this.fetchFitbitData();
-        })
-        .catch(error => {
-            console.error('Error refreshing Fitbit access token:', error);
-        });
-    };
-
-    render() {
-        return (
-            <TouchableOpacity style={styles.button} onPress={this.startAuth}>
-                <Text style={styles.buttonText}>Import from Fitbit</Text>
-            </TouchableOpacity>
-        );
-    }
-}
-
-const styles = StyleSheet.create({
-    button: {
-        backgroundColor: '#00B0B9', 
-        padding: 15,
-        borderRadius: 5,
-        alignItems: 'center',
-    },
-    buttonText: {
-        color: 'white',
-        fontWeight: 'bold'
-    }
-});
+  return (
+    <Button
+      title="Import Fitbit Data"
+      onPress={importFitbitData}
+    />
+  );
+};
 
 export default FitbitDataComponent;
+
+
+
+// import { Component } from 'react';
+// import { Linking, TouchableOpacity, Text, StyleSheet } from 'react-native';
+
+// const CLIENT_ID = "23RD74";
+// const CLIENT_SECRET = "35dfb9bceab400061315f1168074db7e";
+// const REDIRECT_URI = "cross_platform_app_demo://callback";
+// const AUTH_URL = `https://www.fitbit.com/oauth2/authorize?response_type=code&client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&scope=heartrate+activity+nutrition+profile+sleep`;
+
+// class FitbitDataComponent extends Component {
+//     state = {
+//         accessToken: null,
+//         refreshToken: null
+//     };
+
+//     handleOpenURL = (event) => {
+//         let code = /code=([^&]*)/.exec(event.url);
+//         if (code && code[1]) {
+//             this.exchangeCodeForToken(code[1]);
+//         } else {
+//             console.error("Authorization code not found in the callback URL:", event.url);
+//         }
+//     };
+
+//     exchangeCodeForToken = (code) => {
+//         let auth = btoa(`${CLIENT_ID}:${CLIENT_SECRET}`);
+//         fetch('https://api.fitbit.com/oauth2/token', {
+//             method: 'POST',
+//             headers: {
+//                 'Authorization': `Basic ${auth}`,
+//                 'Content-Type': 'application/x-www-form-urlencoded'
+//             },
+//             body: `client_id=${CLIENT_ID}&grant_type=authorization_code&redirect_uri=${REDIRECT_URI}&code=${code}`
+//         })
+//         .then(response => response.json())
+//         .then(data => {
+//             if (data.access_token && data.refresh_token) {
+//                 this.setState({
+//                     accessToken: data.access_token,
+//                     refreshToken: data.refresh_token
+//                 });
+//             } else {
+//                 console.error("Failed to fetch access and refresh tokens:", data);
+//             }
+//         })
+//         .catch(error => {
+//             console.error('Error fetching Fitbit tokens:', error);
+//         });
+//     };
+
+//     componentDidMount() {
+//         Linking.addListener('url', this.handleOpenURL);
+//     }
+
+//     componentWillUnmount() {
+//         Linking.removeListener('url', this.handleOpenURL);
+//     }
+
+//     startAuth = () => {
+//         Linking.openURL(AUTH_URL);
+//     };
+
+//     fetchFitbitData = () => {
+//         if (!this.state.accessToken) return;
+//         fetch('https://api.fitbit.com/1/user/-/profile.json', {
+//             method: 'GET',
+//             headers: {
+//                 'Authorization': `Bearer ${this.state.accessToken}`
+//             }
+//         })
+//         .then(response => response.json())
+//         .then(data => {
+//             console.log(data);
+//         })
+//         .catch(error => {
+//             if (error.message.includes('401')) {
+//                 // Handle token expiration
+//                 this.refreshAccessToken();
+//             } else {
+//                 console.error('Error fetching Fitbit data:', error);
+//             }
+//         });
+//     };
+
+//     refreshAccessToken = () => {
+//         let auth = btoa(`${CLIENT_ID}:${CLIENT_SECRET}`);
+//         fetch('https://api.fitbit.com/oauth2/token', {
+//             method: 'POST',
+//             headers: {
+//                 'Authorization': `Basic ${auth}`,
+//                 'Content-Type': 'application/x-www-form-urlencoded'
+//             },
+//             body: `grant_type=refresh_token&refresh_token=${this.state.refreshToken}`
+//         })
+//         .then(response => response.json())
+//         .then(data => {
+//             this.setState({
+//                 accessToken: data.access_token,
+//                 refreshToken: data.refresh_token
+//             });
+//             this.fetchFitbitData();
+//         })
+//         .catch(error => {
+//             console.error('Error refreshing Fitbit access token:', error);
+//         });
+//     };
+
+//     render() {
+//         return (
+//             <TouchableOpacity style={styles.button} onPress={this.startAuth}>
+//                 <Text style={styles.buttonText}>Import from Fitbit</Text>
+//             </TouchableOpacity>
+//         );
+//     }
+// }
+
+// const styles = StyleSheet.create({
+//     button: {
+//         backgroundColor: '#00B0B9', 
+//         padding: 15,
+//         borderRadius: 5,
+//         alignItems: 'center',
+//     },
+//     buttonText: {
+//         color: 'white',
+//         fontWeight: 'bold'
+//     }
+// });
+
+// export default FitbitDataComponent;
 
 
 // import {Component} from 'react';
