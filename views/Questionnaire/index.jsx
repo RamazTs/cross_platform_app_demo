@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   Platform,
   Alert,
+  ScrollView,
 } from 'react-native';
 import {Component} from 'react';
 import Question from '../../components/Question/Question.jsx';
@@ -18,6 +19,7 @@ class Questionnaire extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      lastRecognitionTimestamp: null, 
       isStarted: false,
       isEnded: false,
       questionIndex: 0,
@@ -40,6 +42,8 @@ class Questionnaire extends Component {
         nine: 9,
       },
     };
+    this.debounceTimer = null;         
+    this.found_2 = false;  
   }
 
   getWeather = async (lat, lon) => {
@@ -117,19 +121,38 @@ class Questionnaire extends Component {
   };
 
   readQuestion = () => {
-    const {question, answers} = this.state.question_obj;
+    const { question, answers } = this.state.question_obj;
 
-    const text =
-      'Question ' + (this.state.questionIndex + 1) + '. ' + question + '; ';
+    const text = 'Question ' + (this.state.questionIndex + 1) + '. ' + question + '; ';
 
-    const ans = answers
-      .map((ans, index) => {
-        if (this.state.questionIndex == 0) return index + 1 + ', ' + ans;
-        return index + 1 + ', ';
-      })
-      .join();
+    let ans;
+    if (this.state.questionIndex === 0) {
+      ans = answers.join('. ');
+    } else {
+        // For subsequent questions, just read the numbers of the answer choices
+        ans = answers
+            .map((_, index) => {
+                return + (index + 1);
+            })
+            .join('. ');
+    }
+      
     Tts.speak(text + ans);
-  };
+};
+  // readQuestion = () => {
+  //   const {question, answers} = this.state.question_obj;
+
+  //   const text =
+  //     'Question ' + (this.state.questionIndex + 1) + '. ' + question + '; ';
+
+  //     const ans = answers
+  //     .map((ans, index) => {
+  //       return 'Answer ' + (index + 1) + ': ' + ans;
+  //     })
+  //     .join('. ');
+      
+  //   Tts.speak(text + ans);
+  // };
 
   updateIndex = async () => {
     await Tts.stop();
@@ -193,43 +216,100 @@ class Questionnaire extends Component {
 
   speechResultsHandler = async e => {
     console.log(e);
+
+    // Check for debounce
+    const currentTimestamp = Date.now();
+    if (this.state.lastRecognitionTimestamp && currentTimestamp - this.state.lastRecognitionTimestamp < 1000) {
+        // If it's been less than a second since the last recognition, return
+        return;
+    }
+
+    this.setState({ lastRecognitionTimestamp: currentTimestamp });  // Update the timestamp
+
     if (this.found_2 || this.state.ignoreVoiceResults) return;
     const {question, answers} = this.state.question_obj;
     const text = e.value[0];
     if (!text) return;
     const words = text.split(' ');
-    let numberOrWord = words[words.length - 1].toLowerCase();
 
-    // Check if it's a word and map it to the number
-    if (this.state.numbersInWords[numberOrWord]) {
-      numberOrWord = this.state.numbersInWords[numberOrWord];
-    } else {
-      numberOrWord = parseInt(numberOrWord, 10);
+    // Check each word for a number
+    let numberOrWord = null;
+    for (let word of words) {
+        word = word.toLowerCase();
+        if (this.state.numbersInWords[word]) {
+            numberOrWord = this.state.numbersInWords[word];
+            break;
+        } else if (!isNaN(parseInt(word, 10))) {
+            numberOrWord = parseInt(word, 10);
+            break;
+        }
     }
 
     // Check if the recognized number or word corresponds to an answer
     if (numberOrWord && numberOrWord <= answers.length) {
-      this.found_2 = true;
-      console.log('FOUND FOUND FOUND');
-      await this.selectAnswerHandler(
-        question,
-        answers,
-        answers[numberOrWord - 1],
-      );
-      await this.updateIndex();
-      return;
+        this.found_2 = true;
+        console.log('FOUND FOUND FOUND');
+        await this.selectAnswerHandler(
+            question,
+            answers,
+            answers[numberOrWord - 1],
+        );
+        await this.updateIndex();
+        this.found_2 = false;   // Reset the flag after processing
+        return;
     }
 };
 
-  startRecording = () => {
-    return new Promise((resolve, reject) => {
-      this.setState({ignoreVoiceResults: false}, () =>
-        Voice.start('en-Us')
-          .then(started => resolve(started))
-          .catch(error => reject(error)),
+//   speechResultsHandler = async e => {
+//     console.log(e);
+//     if (this.found_2 || this.state.ignoreVoiceResults) return;
+//     const {question, answers} = this.state.question_obj;
+//     const text = e.value[0];
+//     if (!text) return;
+//     const words = text.split(' ');
+//     let numberOrWord = words[words.length - 1].toLowerCase();
+
+//     // Check if it's a word and map it to the number
+//     if (this.state.numbersInWords[numberOrWord]) {
+//       numberOrWord = this.state.numbersInWords[numberOrWord];
+//     } else {
+//       numberOrWord = parseInt(numberOrWord, 10);
+//     }
+
+//     // Check if the recognized number or word corresponds to an answer
+//     if (numberOrWord && numberOrWord <= answers.length) {
+//       this.found_2 = true;
+//       console.log('FOUND FOUND FOUND');
+//       await this.selectAnswerHandler(
+//         question,
+//         answers,
+//         answers[numberOrWord - 1],
+//       );
+//       await this.updateIndex();
+//       return;
+//     }
+// };
+
+startRecording = () => {
+  return new Promise((resolve, reject) => {
+      this.found_2 = false;   // Reset the flag before starting recognition
+      this.setState({ ignoreVoiceResults: false }, () =>
+          Voice.start('en-Us')
+              .then(started => resolve(started))
+              .catch(error => reject(error)),
       );
-    });
-  };
+  });
+};
+
+  // startRecording = () => {
+  //   return new Promise((resolve, reject) => {
+  //     this.setState({ignoreVoiceResults: false}, () =>
+  //       Voice.start('en-Us')
+  //         .then(started => resolve(started))
+  //         .catch(error => reject(error)),
+  //     );
+  //   });
+  // };
 
   stopRecording = () => {
     return new Promise((resolve, reject) => {
@@ -248,6 +328,7 @@ class Questionnaire extends Component {
   ttsStartHandler = async event => {
     this.setState({
       ttsState: 'started',
+      ignoreVoiceResults: true,
     });
     this.found_2 = false;
   };
@@ -255,6 +336,7 @@ class Questionnaire extends Component {
   ttsFinishHandler = event => {
     this.setState({
       ttsState: 'finished',
+      ignoreVoiceResults: false,
     });
     this.startRecording();
   };
@@ -329,13 +411,13 @@ class Questionnaire extends Component {
           <TouchableOpacity
             onPress={this.startQuestionnaireHandler}
             style={this.styles.start}
-            accessibilityLabel='start'>
+            accessibilityLabel='Begin questionnaire'>
             <Text style={{color: 'white', fontWeight: 'bold'}}>
-              Start The Questionnaire
+              Begin Questionnaire
             </Text>
           </TouchableOpacity>
         ) : this.state.isEnded && this.state.completedData ? (
-          <>
+          <ScrollView>
             <Text>
               {' '}
               Questionnaire completed at: {this.state.completedData.timestamp}
@@ -382,7 +464,7 @@ class Questionnaire extends Component {
                 Save Data
               </Text>
             </TouchableOpacity>
-          </>
+          </ScrollView>
         ) : this.state.question_obj ? (
           <Question
             questionIndex={this.state.questionIndex}
