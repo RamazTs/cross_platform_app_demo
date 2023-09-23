@@ -339,23 +339,14 @@ class Questionnaire extends Component {
                     </TouchableOpacity>
                 ) : this.state.isEnded && this.state.completedData ? (
                     <>
-                        <Text>
-                            {' '}
-                            Questionnaire completed at: {this.state.completedData.timestamp}
+                        {/* The reformatted code */}
+                        <Text style={this.styles.summaryText}>
+                            Questionnaire completed at: {this.state.completedData.timestamp} | 
+                            Temperature: {this.state.completedData.weather.temperature} °F | 
+                            Weather: {this.state.completedData.weather.description} | 
+                            Location: {this.state.completedData.weather.city}, {this.state.completedData.weather.country}
                         </Text>
-                        <Text>
-                            {' '}
-                            Temperature: {this.state.completedData.weather.temperature} °F
-                        </Text>
-                        <Text>
-                            {' '}
-                            Weather: {this.state.completedData.weather.description}
-                        </Text>
-                        <Text>
-                            {' '}
-                            Location: {this.state.completedData.weather.city},{' '}
-                            {this.state.completedData.weather.country}
-                        </Text>
+
                         {this.state.completedData.questions.map((q, indexQ) => {
                             return (
                                 <Text
@@ -398,6 +389,86 @@ class Questionnaire extends Component {
         </ScrollView>
     );
 }
+//   render() {
+//     return (
+//         <ScrollView 
+//             contentContainerStyle={
+//                 this.state.isStarted
+//                     ? this.styles.containerQuestion
+//                     : this.styles.containerStart
+//             }
+//         >
+//             <View>
+//                 {!this.state.isStarted ? (
+//                     <TouchableOpacity
+//                         onPress={this.startQuestionnaireHandler}
+//                         style={this.styles.start}
+//                         accessibilityLabel='start'>
+//                         <Text style={{ color: 'white', fontWeight: 'bold' }}>
+//                             Begin The Questionnaire
+//                         </Text>
+//                     </TouchableOpacity>
+//                 ) : this.state.isEnded && this.state.completedData ? (
+//                     <>
+//                         <Text>
+//                             {' '}
+//                             Questionnaire completed at: {this.state.completedData.timestamp}
+//                         </Text>
+//                         <Text>
+//                             {' '}
+//                             Temperature: {this.state.completedData.weather.temperature} °F
+//                         </Text>
+//                         <Text>
+//                             {' '}
+//                             Weather: {this.state.completedData.weather.description}
+//                         </Text>
+//                         <Text>
+//                             {' '}
+//                             Location: {this.state.completedData.weather.city},{' '}
+//                             {this.state.completedData.weather.country}
+//                         </Text>
+//                         {this.state.completedData.questions.map((q, indexQ) => {
+//                             return (
+//                                 <Text
+//                                     key={q.question + '-' + q.selected}
+//                                     style={{ marginBottom: 5 }}>
+//                                     {indexQ + 1 + '. '}
+//                                     {q.question} : {q.selected}
+//                                 </Text>
+//                             );
+//                         })}
+//                         <TouchableOpacity
+//                             onPress={this.startQuestionnaireHandler}
+//                             accessibilityLabel='Restart'
+//                             style={{ ...this.styles.start, marginTop: 20 }}>
+//                             <Text style={{ color: 'white', fontWeight: 'bold' }}>
+//                                 Restart Questionnaire
+//                             </Text>
+//                         </TouchableOpacity>
+//                         <TouchableOpacity
+//                             onPress={() => {
+//                                 this.saveDataToAsyncStorage();
+//                                 this.viewStoredData();
+//                             }}
+//                             accessibilityLabel='save'
+//                             style={{ ...this.styles.start, marginTop: 20 }}>
+//                             <Text style={{ color: 'white', fontWeight: 'bold' }}>
+//                                 Save Data
+//                             </Text>
+//                         </TouchableOpacity>
+//                     </>
+//                 ) : this.state.question_obj ? (
+//                     <Question
+//                         questionIndex={this.state.questionIndex}
+//                         question_obj={this.state.question_obj}
+//                         selectAnswerHandler={this.selectAnswerHandler}
+//                         updateIndex={this.updateIndex}
+//                     />
+//                 ) : undefined}
+//             </View>
+//         </ScrollView>
+//     );
+// }
 
   styles = {
     containerStart: {
@@ -416,6 +487,13 @@ class Questionnaire extends Component {
       padding: 8,
       borderRadius: 8,
     },
+    summaryText: {
+      marginBottom: 15,
+      fontSize: 14,
+      textAlign: 'center',
+      fontWeight: 'bold',
+      color: '#333'
+  }
   };
 }
 

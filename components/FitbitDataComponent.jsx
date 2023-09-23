@@ -1,49 +1,49 @@
-import React, { useState } from 'react';
-import { Button, Alert } from 'react-native';
-import { authorize } from 'react-native-app-auth';
+// import React, { useState } from 'react';
+// import { Button, Alert } from 'react-native';
+// import { authorize } from 'react-native-app-auth';
 
-const config = {
-  clientId: '23RD74',
-  clientSecret: '35dfb9bceab400061315f1168074db7e',
-  redirectUrl: 'com.cross_platform_health_app://callback',
-  issuer: 'https://www.fitbit.com',
-  scopes: ['profile'], // You can request the scopes you need
-  serviceConfiguration: {
-    authorizationEndpoint: 'https://www.fitbit.com/oauth2/authorize',
-    tokenEndpoint: 'https://api.fitbit.com/oauth2/token',
-  },
-};
+// const config = {
+//   clientId: '23RD74',
+//   clientSecret: '35dfb9bceab400061315f1168074db7e',
+//   redirectUrl: 'com.cross_platform_health_app://callback',
+//   issuer: 'https://www.fitbit.com',
+//   scopes: ['profile'], // You can request the scopes you need
+//   serviceConfiguration: {
+//     authorizationEndpoint: 'https://www.fitbit.com/oauth2/authorize',
+//     tokenEndpoint: 'https://api.fitbit.com/oauth2/token',
+//   },
+// };
 
-const FitbitDataComponent = () => {
-  const [accessToken, setAccessToken] = useState(null);
+// const FitbitDataComponent = () => {
+//   const [accessToken, setAccessToken] = useState(null);
 
-  const importFitbitData = async () => {
-    try {
-      const authState = await authorize(config);
-      setAccessToken(authState.accessToken);
-      // Fetch Fitbit data here
-      const response = await fetch('https://api.fitbit.com/1/user/-/profile.json', {
-        headers: {
-          Authorization: `Bearer ${authState.accessToken}`
-        }
-      });
-      const data = await response.json();
-      console.log(data);
+//   const importFitbitData = async () => {
+//     try {
+//       const authState = await authorize(config);
+//       setAccessToken(authState.accessToken);
+//       // Fetch Fitbit data here
+//       const response = await fetch('https://api.fitbit.com/1/user/-/profile.json', {
+//         headers: {
+//           Authorization: `Bearer ${authState.accessToken}`
+//         }
+//       });
+//       const data = await response.json();
+//       console.log(data);
 
-    } catch (error) {
-      Alert.alert('Error', 'There was an error during authentication.');
-    }
-  };
+//     } catch (error) {
+//       Alert.alert('Error', 'There was an error during authentication.');
+//     }
+//   };
 
-  return (
-    <Button
-      title="Import Fitbit Data"
-      onPress={importFitbitData}
-    />
-  );
-};
+//   return (
+//     <Button
+//       title="Import Fitbit Data"
+//       onPress={importFitbitData}
+//     />
+//   );
+// };
 
-export default FitbitDataComponent;
+// export default FitbitDataComponent;
 
 
 
