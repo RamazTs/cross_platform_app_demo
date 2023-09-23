@@ -26,8 +26,7 @@ const Home = () => {
   return (
     <View style={styles.container}>
       <SafeAreaView>
-        <Text style={styles.welcomeText}>Welcome to the Questionnaire App</Text>
-        <FitbitDataComponent />
+        <Text style={styles.welcomeText}>Health App</Text>
         <TouchableOpacity
           style={styles.alertButton}
           onPress={() => setAlertEnabled(!alertEnabled)}

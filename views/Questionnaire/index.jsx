@@ -331,7 +331,7 @@ class Questionnaire extends Component {
             style={this.styles.start}
             accessibilityLabel='start'>
             <Text style={{color: 'white', fontWeight: 'bold'}}>
-              Start The Questionnaire
+             Begin The Questionnaire
             </Text>
           </TouchableOpacity>
         ) : this.state.isEnded && this.state.completedData ? (
